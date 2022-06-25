@@ -22,10 +22,11 @@ const (
 )
 
 type Device struct {
-	ID            string
-	DeviceName    string
-	Organization  string
-	Mac           string
+	ID           string
+	DeviceName   string
+	Organization string
+	Mac          string
+
 	LastHeartbeat time.Time
 	RunningTime   int
 	PlanID        int
@@ -40,6 +41,11 @@ func (d *Device) Init(conn *websocket.Conn) {
 		return
 	}
 	d.ID = strconv.Itoa(device.ID)
+	d.DeviceName = device.Name
+	organization := db.GetOrganizationById(device.OrganizationID)
+	if organization != nil {
+		d.Organization = organization.Name
+	}
 }
 
 func (d *Device) Receive(closeFun func()) {
@@ -68,6 +74,7 @@ func (d *Device) Receive(closeFun func()) {
 			}
 			d.LastHeartbeat = time.Now()
 			d.RunningTime = m["running_time"].(int)
+			d.PlanID = m["plan_id"].(int)
 		case typeDeviceInfo:
 			///TODO(vincent)获取设备信息，同步到数据库
 		case typeSyncPlan:

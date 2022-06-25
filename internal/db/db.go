@@ -46,3 +46,12 @@ func GetDeviceByMac(mac string) *orm.Device {
 	}
 	return &d
 }
+
+func GetOrganizationById(id int) *orm.Organization {
+	var o orm.Organization
+	db.First(&o, id)
+	if o.ID == 0 {
+		return nil
+	}
+	return &o
+}

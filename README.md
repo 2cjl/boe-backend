@@ -10,7 +10,8 @@ device->backend
 }
 {
     "type":"ping",
-    "running_time": 1234
+    "running_time": 1234,
+    "plan_id":1
 }
 {
     "type":"device_info",

@@ -85,6 +85,7 @@ func getWebSocketHandler(c *gin.Context) {
 	deviceLock.Lock()
 	devices[mac] = device
 	deviceLock.Unlock()
+
 	device.Init(conn)
 	go device.Receive(func() {
 		deviceLock.Lock()
