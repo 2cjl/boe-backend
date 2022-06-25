@@ -1,28 +1,32 @@
 # boe-backend
 
-ws json 约定
+#### ws json 约定
+
+**device->backend**
 
 ```json
-device->backend
 {
     "type":"hello",
     "mac":"xxx"
 }
 {
     "type":"ping",
-    "running_time": 1234,
-    "plan_id":1
+    "runningTime": 1234,
+    "planId":1
 }
 {
-    "type":"device_info",
+    "type":"deviceInfo",
     "info":{
     }
 }
 {
-    "type":"sync_plan"
+    "type":"syncPlan"
 }
+```
 
-backend->device
+**backend->device**
+
+```json
 {
     "type":"hi",
     "msg":"ok"
@@ -31,18 +35,17 @@ backend->device
     "type":"pong",
 }
 {
-    "type":"plan_list",
+    "type":"planList",
     "plan":[
     	{},
 		{},
     ]
 }
 {
-    "type":"delete_plan",
-    "plan_id":[
+    "type":"deletePlan",
+    "planId":[
         "1","2"
     ]
 }
-
 ```
 
