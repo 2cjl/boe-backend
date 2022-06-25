@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -14,11 +15,18 @@ const (
 	typePing       = "ping"
 	typeDeviceInfo = "device_info"
 	typeSyncPlan   = "sync_plan"
+	typeHello      = "hello"
 
 	// backend->device
 	typePong       = "pong"
 	typePlanList   = "plan_list"
 	typeDeletePlan = "delete_plan"
+	typeHi         = "hi"
+)
+
+var (
+	devices    = make(map[string]*Device)
+	deviceLock sync.Mutex
 )
 
 type Device struct {
@@ -31,11 +39,11 @@ type Device struct {
 	RunningTime   int
 	PlanID        int
 
-	conn *websocket.Conn
+	Conn *websocket.Conn
 }
 
-func (d *Device) Init(conn *websocket.Conn) {
-	d.conn = conn
+// InitInfo 初始化设备信息
+func (d *Device) InitInfo() {
 	log.Printf("device(%s) init", d.Mac)
 
 	device := db.GetDeviceByMac(d.Mac)
@@ -50,11 +58,17 @@ func (d *Device) Init(conn *websocket.Conn) {
 	}
 }
 
-func (d *Device) Receive(closeFun func()) {
-	defer closeFun()
-	defer d.conn.Close()
+func (d *Device) Receive() {
+	defer func() {
+		log.Println("delete")
+		deviceLock.Lock()
+		delete(devices, d.Mac)
+		deviceLock.Unlock()
+	}()
+	defer d.Conn.Close()
 	for {
-		_, msg, err := d.conn.ReadMessage()
+		_, msg, err := d.Conn.ReadMessage()
+		log.Println("err:", err)
 		if err != nil {
 			// 网络错误则直接返回，等待客户端重连
 			log.Printf("device(%s)read for ws fail: %s\n", d.Mac, err.Error())
@@ -70,6 +84,26 @@ func (d *Device) Receive(closeFun func()) {
 		}
 		var result map[string]interface{}
 		switch m["type"].(string) {
+		case typeHello:
+			log.Printf("hello")
+			result = map[string]interface{}{
+				"type": typeHi,
+			}
+
+			mac := m["mac"].(string)
+			d.Mac = mac
+			deviceLock.Lock()
+			if devices[mac] != nil {
+				result["msg"] = "fail: mac conflict"
+				deviceLock.Unlock()
+				log.Println("fail: mac conflict")
+				return
+			}
+			devices[mac] = d
+			deviceLock.Unlock()
+			result["msg"] = "ok"
+			d.InitInfo()
+
 		case typePing:
 			result = map[string]interface{}{
 				"type": typePong,
@@ -90,7 +124,7 @@ func (d *Device) Receive(closeFun func()) {
 			log.Println(err)
 			continue
 		}
-		err = d.conn.WriteMessage(websocket.TextMessage, msg)
+		err = d.Conn.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			log.Printf("device(%s)write for ws fail: %s\n", d.Mac, err.Error())
 			return

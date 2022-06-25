@@ -10,20 +10,17 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
-	"sync"
 )
 
 var (
 	port          int
 	websocketPort int
 	upgrader      = websocket.Upgrader{}
-	devices       = make(map[string]*devicemanager.Device)
-	deviceLock    sync.Mutex
 )
 
 func init() {
 	flag.IntVar(&port, "port", 8080, "")
-	flag.IntVar(&websocketPort, "websocket-port", 8081, "")
+	flag.IntVar(&websocketPort, "websocket-port", 8888, "")
 	flag.Parse()
 	config.InitViper()
 }
@@ -37,7 +34,7 @@ func main() {
 	// 注册所有路由
 	util.RegisterRouter(r)
 
-	http.HandleFunc("/ws", getWebSocketHandler)
+	http.HandleFunc("/", getWebSocketHandler)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
@@ -49,61 +46,20 @@ func main() {
 		}
 	}()
 
-	err := http.ListenAndServe(fmt.Sprintf("localhost:%d", websocketPort), nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", websocketPort), nil)
 	if err != nil && err != http.ErrServerClosed {
 		log.Fatalf("listen: %s\n", err)
 	}
 }
 
 func getWebSocketHandler(w http.ResponseWriter, r *http.Request) {
-	c, err := upgrader.Upgrade(w, r, nil)
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Print("upgrade:", err)
+		log.Println(err)
 		return
 	}
-	defer c.Close()
-	for {
-		mt, message, err := c.ReadMessage()
-		if err != nil {
-			log.Println("read:", err)
-			break
-		}
-		log.Printf("recv: %s", message)
-		err = c.WriteMessage(mt, message)
-		if err != nil {
-			log.Println("write:", err)
-			break
-		}
+	device := &devicemanager.Device{
+		Conn: conn,
 	}
-
-	//conn, err := upgrader.Upgrade(w, r, nil)
-	//if err != nil {
-	//	log.Println(err)
-	//	return
-	//}
-	//_, msg, err := conn.ReadMessage()
-	//if err != nil {
-	//	log.Println(err)
-	//	return
-	//}
-	//m := make(map[string]interface{})
-	//err = json.Unmarshal(msg, &m)
-	//if err != nil || m["type"] != "hello" || m["mac"] == nil || devices[m["mac"].(string)] != nil {
-	//	conn.Close()
-	//	return
-	//}
-	//mac := m["mac"].(string)
-	//device := &devicemanager.Device{
-	//	Mac: mac,
-	//}
-	//deviceLock.Lock()
-	//devices[mac] = device
-	//deviceLock.Unlock()
-	//
-	//device.Init(conn)
-	//go device.Receive(func() {
-	//	deviceLock.Lock()
-	//	delete(devices, mac)
-	//	deviceLock.Unlock()
-	//})
+	device.Receive()
 }
