@@ -16,3 +16,7 @@ func AddDeviceHandler(c *gin.Context) {
 func GetDeviceListHandler(c *gin.Context) {
 
 }
+
+func GetDeviceInfoHandler(c *gin.Context) {
+
+}
