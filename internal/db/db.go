@@ -28,6 +28,11 @@ func getInstance() {
 	}
 }
 
+func GetInstance() *gorm.DB {
+	getInstance()
+	return db
+}
+
 func Login(phone, passwd string) *orm.User {
 	getInstance()
 	var u orm.User

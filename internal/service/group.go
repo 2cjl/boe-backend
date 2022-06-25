@@ -1,6 +1,7 @@
 package service
 
 import (
+	"boe-backend/internal/db"
 	"boe-backend/internal/orm"
 	jwtx "boe-backend/internal/util/jwt"
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,8 @@ func AddGroupHandler(c *gin.Context) {
 		})
 		return
 	}
+
+	db.GetInstance().Create(&group)
 
 	log.Println(info)
 	c.JSON(200, gin.H{})
