@@ -1,12 +1,9 @@
 package main
 
 import (
-	"boe-backend/internal/db"
 	"boe-backend/internal/devicemanager"
-	"boe-backend/internal/service"
 	"boe-backend/internal/util"
 	"boe-backend/internal/util/config"
-	jwtx "boe-backend/internal/util/jwt"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -43,37 +40,6 @@ func main() {
 
 	http.HandleFunc("/ws", getWebSocketHandler)
 
-	authMiddleware, err := jwtx.GetAuthMiddleware()
-	if err != nil {
-		return
-	}
-
-	// users
-	userRoute := r.Group("/user")
-	userRoute.POST("/login", authMiddleware.LoginHandler)
-	userRoute.POST("/register", service.RegisterHandler)
-	// 一组需要验证的路由
-	auth := userRoute.Group("/auth")
-	auth.Use(authMiddleware.MiddlewareFunc())
-	// Refresh time can be longer than token timeout
-	auth.GET("/refresh_token", authMiddleware.RefreshHandler)
-
-	homeRoute := r.Group("/home")
-	homeRoute.Use(authMiddleware.MiddlewareFunc())
-
-	// 首页事件列表路由
-	homeRoute.GET("/events", func(context *gin.Context) {
-		var organizationId = context.Query("organizationId")
-		var events = db.GetAllEvents(organizationId)
-		context.JSON(200, gin.H{
-			"code":    200,
-			"message": "success",
-			"data": gin.H{
-				"events": events,
-			},
-		})
-	})
-
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: r,
@@ -84,7 +50,7 @@ func main() {
 		}
 	}()
 
-	err = http.ListenAndServe(fmt.Sprintf(":%d", websocketPort), nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", websocketPort), nil)
 	if err != nil && err != http.ErrServerClosed {
 		log.Fatalf("listen: %s\n", err)
 	}
@@ -94,10 +60,13 @@ func getWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
-		conn.Close()
 		return
 	}
 	_, msg, err := conn.ReadMessage()
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	m := make(map[string]interface{})
 	err = json.Unmarshal(msg, &m)
 	if err != nil || m["type"] != "hello" || m["mac"] == nil || devices[m["mac"].(string)] != nil {
