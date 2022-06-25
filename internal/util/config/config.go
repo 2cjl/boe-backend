@@ -49,7 +49,14 @@ type Config struct {
 		Secret     string
 		Timeout    time.Duration
 		MaxRefresh time.Duration
-	}
+	} `mapstructure:"jwt"`
+
+	Minio struct {
+		Endpoint  string
+		Port      string
+		AccessKey string
+		SecretKey string
+	} `mapstructure:"minio"`
 
 	//Redis struct {
 	//	Endpoint string
