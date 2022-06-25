@@ -24,6 +24,10 @@ device->backend
 
 backend->device
 {
+    "type":"hi",
+    "msg":"ok"
+}
+{
     "type":"pong",
 }
 {

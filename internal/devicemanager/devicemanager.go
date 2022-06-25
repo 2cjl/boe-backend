@@ -13,14 +13,14 @@ import (
 const (
 	// device->backend
 	typePing       = "ping"
-	typeDeviceInfo = "device_info"
-	typeSyncPlan   = "sync_plan"
+	typeDeviceInfo = "deviceInfo"
+	typeSyncPlan   = "syncPlan"
 	typeHello      = "hello"
 
 	// backend->device
 	typePong       = "pong"
-	typePlanList   = "plan_list"
-	typeDeletePlan = "delete_plan"
+	typePlanList   = "planList"
+	typeDeletePlan = "deletePlan"
 	typeHi         = "hi"
 )
 
@@ -109,8 +109,8 @@ func (d *Device) Receive() {
 				"type": typePong,
 			}
 			d.LastHeartbeat = time.Now()
-			d.RunningTime = m["running_time"].(int)
-			d.PlanID = m["plan_id"].(int)
+			d.RunningTime = m["runningTime"].(int)
+			d.PlanID = m["planId"].(int)
 		case typeDeviceInfo:
 			///TODO(vincent)获取设备信息，同步到数据库
 		case typeSyncPlan:
