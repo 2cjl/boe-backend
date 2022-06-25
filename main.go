@@ -8,6 +8,7 @@ import (
 	jwtx "boe-backend/internal/util/jwt"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
@@ -75,7 +76,20 @@ func main() {
 		})
 	})
 
-	util.WatchSignalGrace(r, port, websocketPort)
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: r,
+	}
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	err = http.ListenAndServe(fmt.Sprintf(":%d", websocketPort), nil)
+	if err != nil && err != http.ErrServerClosed {
+		log.Fatalf("listen: %s\n", err)
+	}
 }
 
 func getWebSocketHandler(w http.ResponseWriter, r *http.Request) {

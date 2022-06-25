@@ -18,17 +18,11 @@ func WatchSignal() {
 	<-signalCh
 }
 
-func WatchSignalGrace(r *gin.Engine, port int, wsPort int) {
+func WatchSignalGrace(r *gin.Engine, port int) {
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: r,
 	}
-	go func() {
-		err := http.ListenAndServe(fmt.Sprintf(":%d", wsPort), nil)
-		if err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
-		}
-	}()
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %s\n", err)
