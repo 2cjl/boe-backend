@@ -8,6 +8,10 @@ import (
 )
 
 type PlayPeriod struct {
+	StartTime string
+	EndTime   string
+	LoopMode  string
+	showIds   []string
 }
 
 type CreatePlanRequest struct {
@@ -20,7 +24,7 @@ type CreatePlanRequest struct {
 	// 结束时间
 	EndDate string
 	// 该计划对应的时间段
-	PlayPeriod PlayPeriod
+	PlayPeriod []PlayPeriod
 }
 
 func CreatePlan(c *gin.Context) {
@@ -44,7 +48,11 @@ func CreatePlan(c *gin.Context) {
 	plan.State = "NOT_RELEASED"
 
 	var dbInstance = db.GetInstance()
+	// 保存计划实体
 	dbInstance.Create(&plan)
+
+	// 保存时间段
+	//var playPeriodList orm.PlayPeriod
 
 	c.JSON(200, gin.H{
 		"message": "success",
