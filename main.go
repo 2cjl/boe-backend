@@ -4,7 +4,6 @@ import (
 	"boe-backend/internal/devicemanager"
 	"boe-backend/internal/util"
 	"boe-backend/internal/util/config"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -57,34 +56,54 @@ func main() {
 }
 
 func getWebSocketHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
+	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		log.Print("upgrade:", err)
 		return
 	}
-	_, msg, err := conn.ReadMessage()
-	if err != nil {
-		log.Println(err)
-		return
+	defer c.Close()
+	for {
+		mt, message, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			break
+		}
+		log.Printf("recv: %s", message)
+		err = c.WriteMessage(mt, message)
+		if err != nil {
+			log.Println("write:", err)
+			break
+		}
 	}
-	m := make(map[string]interface{})
-	err = json.Unmarshal(msg, &m)
-	if err != nil || m["type"] != "hello" || m["mac"] == nil || devices[m["mac"].(string)] != nil {
-		conn.Close()
-		return
-	}
-	mac := m["mac"].(string)
-	device := &devicemanager.Device{
-		Mac: mac,
-	}
-	deviceLock.Lock()
-	devices[mac] = device
-	deviceLock.Unlock()
 
-	device.Init(conn)
-	go device.Receive(func() {
-		deviceLock.Lock()
-		delete(devices, mac)
-		deviceLock.Unlock()
-	})
+	//conn, err := upgrader.Upgrade(w, r, nil)
+	//if err != nil {
+	//	log.Println(err)
+	//	return
+	//}
+	//_, msg, err := conn.ReadMessage()
+	//if err != nil {
+	//	log.Println(err)
+	//	return
+	//}
+	//m := make(map[string]interface{})
+	//err = json.Unmarshal(msg, &m)
+	//if err != nil || m["type"] != "hello" || m["mac"] == nil || devices[m["mac"].(string)] != nil {
+	//	conn.Close()
+	//	return
+	//}
+	//mac := m["mac"].(string)
+	//device := &devicemanager.Device{
+	//	Mac: mac,
+	//}
+	//deviceLock.Lock()
+	//devices[mac] = device
+	//deviceLock.Unlock()
+	//
+	//device.Init(conn)
+	//go device.Receive(func() {
+	//	deviceLock.Lock()
+	//	delete(devices, mac)
+	//	deviceLock.Unlock()
+	//})
 }
