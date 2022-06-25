@@ -34,7 +34,7 @@ func RegisterRouter(r *gin.Engine) {
 	homeRoute := r.Group("/home")
 	homeRoute.Use(authMiddleware.MiddlewareFunc())
 	// 首页所有信息
-	homeRoute.GET("/all", service.HomeAllHandler)
+	homeRoute.GET("/group/count", service.GroupCountHandler)
 	// 首页事件列表路由
 	homeRoute.GET("/events", service.GetAllEvents)
 }
