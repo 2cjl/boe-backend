@@ -116,7 +116,11 @@ func (d *Device) Receive() {
 			d.PlanID = m["planId"].(float64)
 		case typeDeviceInfo:
 			///TODO(vincent)获取设备信息，同步到数据库
+			continue
 		case typeSyncPlan:
+			result = map[string]interface{}{
+				"type": typePlanList,
+			}
 			///TODO(vincent)从数据库筛选未安排的计划，返回给设备
 		default:
 			log.Printf("unknown type:%s\n", m["type"].(string))
@@ -128,6 +132,10 @@ func (d *Device) Receive() {
 			return
 		}
 	}
+}
+
+func (d *Device) SendMsg(msgType string) {
+
 }
 
 func (d *Device) writeMsg(data map[string]interface{}) error {
