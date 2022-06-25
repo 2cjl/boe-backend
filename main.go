@@ -20,7 +20,7 @@ var (
 
 func init() {
 	flag.IntVar(&port, "port", 8080, "")
-	flag.IntVar(&websocketPort, "websocket-port", 8888, "")
+	flag.IntVar(&websocketPort, "websocket-port", 8081, "")
 	flag.Parse()
 	config.InitViper()
 }
