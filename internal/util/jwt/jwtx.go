@@ -78,8 +78,8 @@ func getAuthMiddleware(secret []byte, timeout, maxRefresh time.Duration) (*jwt.G
 			if phone == "" || passwd == "" {
 				return nil, jwt.ErrFailedAuthentication
 			}
-			user, err := db.Login(phone, passwd)
-			if err != nil {
+			user := db.Login(phone, passwd)
+			if user == nil {
 				log.Println(err)
 				return nil, jwt.ErrFailedAuthentication
 			}

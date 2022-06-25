@@ -1,6 +1,8 @@
 package orm
 
-import "time"
+import (
+	"time"
+)
 
 type Device struct {
 	ID             int       `gorm:"column:id;primary_key"`
@@ -11,4 +13,21 @@ type Device struct {
 	CreatedAt      time.Time `gorm:"column:created_at"`
 	UpdatedAt      time.Time `gorm:"column:updated_at"`
 	DeletedAt      time.Time `gorm:"column:deleted_at"`
+}
+
+type DeviceInfo struct {
+	ID          int       `gorm:"column:id;primary_key"`
+	Model       string    `gorm:"column:model"`
+	IP          string    `gorm:"column:ip"`
+	HardwareID  string    `gorm:"column:hardware_id"`
+	Latitude    float64   `gorm:"column:latitude"`
+	Longitude   float64   `gorm:"column:longitude"`
+	RunningTime int       `gorm:"column:running_time"`
+	Resolution  string    `gorm:"column:resolution"`
+	AppVersion  string    `gorm:"column:app_version"`
+	Memory      string    `gorm:"column:memory"`
+	Storage     string    `gorm:"column:storage"`
+	CreatedAt   time.Time `gorm:"column:created_at"`
+	UpdatedAt   time.Time `gorm:"column:updated_at"`
+	DeletedAt   time.Time `gorm:"column:deleted_at"`
 }

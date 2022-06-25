@@ -3,7 +3,6 @@ package db
 import (
 	"boe-backend/internal/orm"
 	"boe-backend/internal/util/config"
-	"errors"
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -29,12 +28,21 @@ func getInstance() {
 	}
 }
 
-func Login(phone, passwd string) (*orm.User, error) {
+func Login(phone, passwd string) *orm.User {
 	getInstance()
 	var u orm.User
 	db.Where("phone = ? AND passwd = ?", phone, passwd).First(&u)
 	if u.ID == 0 {
-		return nil, errors.New("does not exist")
+		return nil
 	}
-	return &u, nil
+	return &u
+}
+
+func GetDeviceByMac(mac string) *orm.Device {
+	var d orm.Device
+	db.Where("mac = ?", mac).First(&d)
+	if d.ID == 0 {
+		return nil
+	}
+	return &d
 }
