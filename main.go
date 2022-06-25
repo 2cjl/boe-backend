@@ -11,18 +11,21 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
+	"net/http"
 	"sync"
 )
 
 var (
-	port       int
-	upgrader   = websocket.Upgrader{}
-	devices    = make(map[string]*devicemanager.Device)
-	deviceLock sync.Mutex
+	port          int
+	websocketPort int
+	upgrader      = websocket.Upgrader{}
+	devices       = make(map[string]*devicemanager.Device)
+	deviceLock    sync.Mutex
 )
 
 func init() {
 	flag.IntVar(&port, "port", 8080, "")
+	flag.IntVar(&websocketPort, "websocket-port", 8081, "")
 	flag.Parse()
 	config.InitViper()
 }
@@ -44,7 +47,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	r.GET("/ws", getWebSocketHandler)
+	http.HandleFunc("/ws", getWebSocketHandler)
 
 	// users
 	userRoute := r.Group("/user")
@@ -58,7 +61,6 @@ func main() {
 
 	homeRoute := r.Group("/home")
 	homeRoute.Use(authMiddleware.MiddlewareFunc())
-	homeRoute.GET("/all", homeAllHandler)
 
 	// 首页事件列表路由
 	homeRoute.GET("/events", func(context *gin.Context) {
@@ -73,20 +75,11 @@ func main() {
 		})
 	})
 
-	util.WatchSignalGrace(r, port)
+	util.WatchSignalGrace(r, port, websocketPort)
 }
 
-func homeAllHandler(c *gin.Context) {
-	t, _ := c.Get(jwtx.IdentityKey)
-	info := t.(*jwtx.TokenUserInfo)
-	log.Println(info)
-	c.JSON(200, gin.H{
-		"error": "server internal error",
-	})
-}
-
-func getWebSocketHandler(c *gin.Context) {
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+func getWebSocketHandler(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		conn.Close()
