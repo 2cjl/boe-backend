@@ -1,6 +1,7 @@
 package main
 
 import (
+	"boe-backend/internal/db"
 	"boe-backend/internal/devicemanager"
 	"boe-backend/internal/util"
 	"boe-backend/internal/util/config"
@@ -57,6 +58,19 @@ func main() {
 	homeRoute := r.Group("/home")
 	homeRoute.Use(authMiddleware.MiddlewareFunc())
 	homeRoute.GET("/all", homeAllHandler)
+
+	// 首页事件列表路由
+	homeRoute.GET("/events", func(context *gin.Context) {
+		var organizationId = context.Query("organizationId")
+		var events = db.GetAllEvents(organizationId)
+		context.JSON(200, gin.H{
+			"code":    200,
+			"message": "success",
+			"data": gin.H{
+				"events": events,
+			},
+		})
+	})
 
 	util.WatchSignalGrace(r, port)
 }

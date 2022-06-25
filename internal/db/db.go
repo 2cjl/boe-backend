@@ -67,3 +67,11 @@ func GetOrganizationByUser(uid int) *orm.Organization {
 	}
 	return &o
 }
+
+// GetAllEvents 获取所有的事件
+func GetAllEvents(organizationId string) []orm.Event {
+	getInstance()
+	var users []orm.Event
+	db.Find(&users, "organization_id = ?", organizationId)
+	return users
+}
