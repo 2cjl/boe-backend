@@ -22,6 +22,9 @@ const (
 	typePlanList   = "planList"
 	typeDeletePlan = "deletePlan"
 	typeHi         = "hi"
+
+	writeTimeout = time.Second * 8
+	readTimeout  = time.Second * 8
 )
 
 var (
@@ -67,8 +70,8 @@ func (d *Device) Receive() {
 	}()
 	defer d.Conn.Close()
 	for {
+		d.Conn.SetReadDeadline(time.Now().Add(readTimeout))
 		_, msg, err := d.Conn.ReadMessage()
-		log.Println("err:", err)
 		if err != nil {
 			// 网络错误则直接返回，等待客户端重连
 			log.Printf("device(%s)read for ws fail: %s\n", d.Mac, err.Error())
@@ -119,15 +122,20 @@ func (d *Device) Receive() {
 			log.Printf("unknown type:%s\n", m["type"].(string))
 			continue
 		}
-		msg, err = json.Marshal(result)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		err = d.Conn.WriteMessage(websocket.TextMessage, msg)
+		err = d.writeMsg(result)
 		if err != nil {
 			log.Printf("device(%s)write for ws fail: %s\n", d.Mac, err.Error())
 			return
 		}
 	}
+}
+
+func (d *Device) writeMsg(data map[string]interface{}) error {
+	msg, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	d.Conn.SetWriteDeadline(time.Now().Add(writeTimeout))
+	err = d.Conn.WriteMessage(websocket.TextMessage, msg)
+	return err
 }
