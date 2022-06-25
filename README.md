@@ -29,7 +29,7 @@
 ```json
 {
     "type":"hi",
-    "msg":"ok"
+    "msg":"succ"
 }
 {
     "type":"pong",

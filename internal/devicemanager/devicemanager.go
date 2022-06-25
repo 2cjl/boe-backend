@@ -2,6 +2,7 @@ package devicemanager
 
 import (
 	"boe-backend/internal/db"
+	"boe-backend/internal/orm"
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"log"
@@ -25,6 +26,9 @@ const (
 
 	writeTimeout = time.Second * 8
 	readTimeout  = time.Second * 8
+
+	DeviceOffline = "offline"
+	DeviceOnline  = "online"
 )
 
 var (
@@ -33,14 +37,14 @@ var (
 )
 
 type Device struct {
-	ID           string
-	DeviceName   string
-	Organization string
-	Mac          string
+	ID             int
+	DeviceName     string
+	OrganizationID int
+	Mac            string
 
 	LastHeartbeat time.Time
-	RunningTime   float64
-	PlanID        float64
+	RunningTime   int
+	PlanID        int
 
 	Conn *websocket.Conn
 }
@@ -53,12 +57,17 @@ func (d *Device) InitInfo() {
 	if device == nil {
 		return
 	}
-	d.ID = strconv.Itoa(device.ID)
+	d.ID = device.ID
 	d.DeviceName = device.Name
 	organization := db.GetOrganizationById(device.OrganizationID)
 	if organization != nil {
-		d.Organization = organization.Name
+		d.OrganizationID = organization.ID
 	}
+
+	// 新增事件
+	e := NewDeviceEvent(device.Name, device.OrganizationID, true)
+	db.GetInstance().Create(e)
+	db.GetInstance().Model(device).Update("state", DeviceOnline)
 }
 
 func (d *Device) Receive() {
@@ -67,6 +76,15 @@ func (d *Device) Receive() {
 		deviceLock.Lock()
 		delete(devices, d.Mac)
 		deviceLock.Unlock()
+
+		// id为0 则为未注册设备
+		if d.ID != 0 {
+			e := NewDeviceEvent(d.DeviceName, d.OrganizationID, false)
+			db.GetInstance().Create(e)
+			// 更新状态
+			db.GetInstance().Model(&orm.Device{}).Where("id = ?", d.ID).Updates(orm.Device{State: DeviceOffline, PlanID: d.PlanID})
+			db.GetInstance().Model(&orm.DeviceInfo{ID: d.ID}).Updates(orm.DeviceInfo{LastHeartbeat: d.LastHeartbeat, RunningTime: d.RunningTime})
+		}
 	}()
 	defer d.Conn.Close()
 	for {
@@ -112,8 +130,8 @@ func (d *Device) Receive() {
 				"type": typePong,
 			}
 			d.LastHeartbeat = time.Now()
-			d.RunningTime = m["runningTime"].(float64)
-			d.PlanID = m["planId"].(float64)
+			d.RunningTime = int(m["runningTime"].(float64))
+			d.PlanID = int(m["planId"].(float64))
 		case typeDeviceInfo:
 			///TODO(vincent)获取设备信息，同步到数据库
 			continue
@@ -150,4 +168,18 @@ func (d *Device) writeMsg(data map[string]interface{}) error {
 	d.Conn.SetWriteDeadline(time.Now().Add(writeTimeout))
 	err = d.Conn.WriteMessage(websocket.TextMessage, msg)
 	return err
+}
+
+func NewDeviceEvent(deviceName string, organizationID int, isOnline bool) *orm.Event {
+	e := &orm.Event{
+		Time:           time.Now(),
+		ObjectType:     "设备",
+		OrganizationId: strconv.Itoa(organizationID),
+	}
+	if isOnline {
+		e.Content = deviceName + " 已上线"
+	} else {
+		e.Content = deviceName + " 已下线"
+	}
+	return e
 }
