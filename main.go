@@ -1,11 +1,9 @@
 package main
 
 import (
-	"boe-backend/internal/db"
 	"boe-backend/internal/devicemanager"
 	"boe-backend/internal/util"
 	"boe-backend/internal/util/config"
-	jwtx "boe-backend/internal/util/jwt"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -33,21 +31,14 @@ func init() {
 
 func main() {
 	r := gin.New()
-	//gin.SetMode(gin.ReleaseMode)
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Use(util.Cors())
 
-	r.NoRoute(func(c *gin.Context) {
-		c.JSON(404, gin.H{"message": "Page not found"})
-	})
+	// 注册所有路由
+	util.RegisterRouter(r)
 
-	// 初始化JWT中间件
-	authMiddleware, err := jwtx.GetAuthMiddleware()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+<<<<<<< HEAD
 	http.HandleFunc("/ws", getWebSocketHandler)
 
 	// users
@@ -94,6 +85,15 @@ func main() {
 
 func getWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
+=======
+	// websocket 相关
+	r.GET("/ws", getWebSocketHandler)
+	util.WatchSignalGrace(r, port)
+}
+
+func getWebSocketHandler(c *gin.Context) {
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+>>>>>>> origin/feat/yuzhanglong
 	if err != nil {
 		log.Println(err)
 		conn.Close()
@@ -119,45 +119,5 @@ func getWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 		deviceLock.Lock()
 		delete(devices, mac)
 		deviceLock.Unlock()
-	})
-}
-
-func registerHandler(c *gin.Context) {
-	var registerForm jwtx.RegisterForm
-	if err := c.ShouldBind(&registerForm); err != nil {
-		c.JSON(400, gin.H{
-			"error": "Bad request parameter",
-		})
-		return
-	}
-
-	//isExist, err := db.IsExistPhone(registerForm.Phone)
-	//if err != nil {
-	//	log.Println(err)
-	//	c.JSON(500, gin.H{
-	//		"error": "Server internal error",
-	//	})
-	//	return
-	//}
-	//if isExist {
-	//	c.JSON(400, gin.H{
-	//		"error": "phone already exists",
-	//	})
-	//	return
-	//}
-	//
-	//id, err := db.Register(registerForm.Username, registerForm.Phone, registerForm.Passwd, registerForm.IdNumber, registerForm.WorkStatus, registerForm.Age)
-	//if err != nil {
-	//	log.Println(err)
-	//	c.JSON(500, gin.H{
-	//		"error": "Server internal error",
-	//	})
-	//	return
-	//}
-
-	//fmt.Printf("id (%v, %T)\n", id, id)
-
-	c.JSON(200, gin.H{
-		//"token": jwtx.GenerateToken(id),
 	})
 }
