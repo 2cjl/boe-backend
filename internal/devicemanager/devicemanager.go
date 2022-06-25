@@ -120,6 +120,7 @@ func (d *Device) Receive() {
 		case typeSyncPlan:
 			result = map[string]interface{}{
 				"type": typePlanList,
+				"plan": []int{},
 			}
 			///TODO(vincent)从数据库筛选未安排的计划，返回给设备
 		default:
@@ -134,8 +135,11 @@ func (d *Device) Receive() {
 	}
 }
 
-func (d *Device) SendMsg(msgType string) {
-
+func (d *Device) DeletePlan(planIds []int) error {
+	data := make(map[string]interface{})
+	data["type"] = typeDeletePlan
+	data["planIds"] = planIds
+	return d.writeMsg(data)
 }
 
 func (d *Device) writeMsg(data map[string]interface{}) error {

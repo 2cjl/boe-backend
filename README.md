@@ -43,7 +43,7 @@
 }
 {
     "type":"deletePlan",
-    "planId":[
+    "planIds":[
         "1","2"
     ]
 }
