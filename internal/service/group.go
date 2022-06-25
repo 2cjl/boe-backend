@@ -6,6 +6,7 @@ import (
 	jwtx "boe-backend/internal/util/jwt"
 	"github.com/gin-gonic/gin"
 	"log"
+	"strconv"
 )
 
 func AddGroupHandler(c *gin.Context) {
@@ -14,7 +15,7 @@ func AddGroupHandler(c *gin.Context) {
 
 	var group orm.Group
 	err := c.ShouldBindJSON(&group)
-	if err != nil {
+	if err != nil || strconv.Itoa(group.OrganizationID) != info.OrganizationID {
 		c.JSON(200, gin.H{
 			"code":  400,
 			"error": "Bad request parameter",
@@ -22,17 +23,30 @@ func AddGroupHandler(c *gin.Context) {
 		return
 	}
 
-	db.GetInstance().Create(&group)
-
-	log.Println(info)
-	c.JSON(200, gin.H{})
+	res := db.GetInstance().Create(&group)
+	if res.Error != nil {
+		log.Println(res.Error)
+		c.JSON(200, gin.H{
+			"code":  500,
+			"error": "add group fail",
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+	})
 }
 
 func GetGroupListHandler(c *gin.Context) {
 	t, _ := c.Get(jwtx.IdentityKey)
 	info := t.(*jwtx.TokenUserInfo)
-	log.Println(info)
-	c.JSON(200, gin.H{})
+	list := db.GetAllGroups(info.OrganizationID)
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+		"data":    list,
+	})
 }
 
 func GetGroupInfoHandler(c *gin.Context) {

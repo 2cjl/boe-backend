@@ -76,7 +76,19 @@ func GetOrganizationByUser(uid int) *orm.Organization {
 // GetAllEvents 获取所有的事件
 func GetAllEvents(organizationId string) []orm.Event {
 	getInstance()
-	var users []orm.Event
-	db.Find(&users, "organization_id = ?", organizationId)
-	return users
+	var events []orm.Event
+	db.Find(&events, "organization_id = ?", organizationId)
+	return events
+}
+
+func GetAllGroups(organizationId string) []orm.Group {
+	getInstance()
+	var groups []orm.Group
+	db.Find(&groups, "organization_id = ?", organizationId)
+	return groups
+}
+
+func GetDeviceInGroup(groupId string) {
+	getInstance()
+	///TODO
 }
