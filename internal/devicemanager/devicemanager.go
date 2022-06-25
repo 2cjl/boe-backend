@@ -36,6 +36,8 @@ type Device struct {
 
 func (d *Device) Init(conn *websocket.Conn) {
 	d.conn = conn
+	log.Printf("device(%s) init", d.Mac)
+
 	device := db.GetDeviceByMac(d.Mac)
 	if device == nil {
 		return
@@ -46,7 +48,6 @@ func (d *Device) Init(conn *websocket.Conn) {
 	if organization != nil {
 		d.Organization = organization.Name
 	}
-	log.Printf("device(%s) init", d.Mac)
 }
 
 func (d *Device) Receive(closeFun func()) {
