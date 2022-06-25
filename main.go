@@ -56,18 +56,24 @@ func main() {
 
 	homeRoute := r.Group("/home")
 	homeRoute.Use(authMiddleware.MiddlewareFunc())
-	homeRoute.GET("/all")
+	homeRoute.GET("/all", homeAllHandler)
 
 	util.WatchSignalGrace(r, port)
+}
+
+func homeAllHandler(c *gin.Context) {
+	t, _ := c.Get(jwtx.IdentityKey)
+	info := t.(*jwtx.TokenUserInfo)
+	log.Println(info)
+	c.JSON(200, gin.H{
+		"error": "server internal error",
+	})
 }
 
 func getWebSocketHandler(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println(err)
-		c.JSON(500, gin.H{
-			"error": "server internal error",
-		})
 		conn.Close()
 		return
 	}
@@ -75,10 +81,6 @@ func getWebSocketHandler(c *gin.Context) {
 	m := make(map[string]interface{})
 	err = json.Unmarshal(msg, &m)
 	if err != nil || m["type"] != "hello" || m["mac"] == nil || devices[m["mac"].(string)] != nil {
-		c.JSON(200, gin.H{
-			"code":  "500",
-			"error": "hello msg error",
-		})
 		conn.Close()
 		return
 	}
