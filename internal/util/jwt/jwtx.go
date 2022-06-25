@@ -4,7 +4,6 @@ import (
 	"boe-backend/internal/db"
 	"boe-backend/internal/util/config"
 	"errors"
-	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -14,8 +13,9 @@ import (
 )
 
 const (
-	IdentityKey = "id"
-	appRealm    = "bankSpike"
+	IdentityKey     = "id"
+	OrganizationKey = "org"
+	appRealm        = "bankSpike"
 )
 
 var (
@@ -35,7 +35,8 @@ type RegisterForm struct {
 
 // TokenUserInfo 结构体中的数据将会编码进token
 type TokenUserInfo struct {
-	ID string
+	ID             string
+	OrganizationID string
 }
 
 func GetAuthMiddleware() (*jwt.GinJWTMiddleware, error) {
@@ -56,7 +57,8 @@ func getAuthMiddleware(secret []byte, timeout, maxRefresh time.Duration) (*jwt.G
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*TokenUserInfo); ok {
 				return jwt.MapClaims{
-					IdentityKey: v.ID,
+					IdentityKey:     v.ID,
+					OrganizationKey: v.OrganizationID,
 				}
 			}
 			return jwt.MapClaims{}
@@ -64,7 +66,8 @@ func getAuthMiddleware(secret []byte, timeout, maxRefresh time.Duration) (*jwt.G
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			return &TokenUserInfo{
-				ID: claims[IdentityKey].(string),
+				ID:             claims[IdentityKey].(string),
+				OrganizationID: claims[OrganizationKey].(string),
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -83,8 +86,12 @@ func getAuthMiddleware(secret []byte, timeout, maxRefresh time.Duration) (*jwt.G
 				log.Println(err)
 				return nil, jwt.ErrFailedAuthentication
 			}
+			o := db.GetOrganizationByUser(user.ID)
 			u := &TokenUserInfo{
 				ID: strconv.Itoa(user.ID),
+			}
+			if o != nil {
+				u.OrganizationID = strconv.Itoa(o.ID)
 			}
 			return u, nil
 		},
@@ -107,19 +114,6 @@ func getAuthMiddleware(secret []byte, timeout, maxRefresh time.Duration) (*jwt.G
 		return nil, errors.New("authMiddleware.MiddlewareInit() Error:" + err.Error())
 	}
 	return authMiddleware, nil
-}
-
-func GenerateToken(id int) string {
-	token, _, err := authMiddleware.TokenGenerator(
-		&TokenUserInfo{
-			ID: strconv.Itoa(id),
-		},
-	)
-	if err != nil {
-		return ""
-	}
-	fmt.Printf("token (%v, %T)\n", token, token)
-	return token
 }
 
 func IsValidToken(token string) bool {

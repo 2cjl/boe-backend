@@ -46,6 +46,7 @@ func (d *Device) Init(conn *websocket.Conn) {
 	if organization != nil {
 		d.Organization = organization.Name
 	}
+	log.Printf("device(%s) init", d.Mac)
 }
 
 func (d *Device) Receive(closeFun func()) {

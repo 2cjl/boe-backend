@@ -45,14 +45,18 @@ func main() {
 	r.GET("/ws", getWebSocketHandler)
 
 	// users
-	router := r.Group("/user")
-	router.POST("/login", authMiddleware.LoginHandler)
-	router.POST("/register", registerHandler)
+	userRoute := r.Group("/user")
+	userRoute.POST("/login", authMiddleware.LoginHandler)
+	userRoute.POST("/register", registerHandler)
 	// 一组需要验证的路由
-	auth := router.Group("/auth")
+	auth := userRoute.Group("/auth")
 	auth.Use(authMiddleware.MiddlewareFunc())
 	// Refresh time can be longer than token timeout
 	auth.GET("/refresh_token", authMiddleware.RefreshHandler)
+
+	homeRoute := r.Group("/home")
+	homeRoute.Use(authMiddleware.MiddlewareFunc())
+	homeRoute.GET("/all")
 
 	util.WatchSignalGrace(r, port)
 }

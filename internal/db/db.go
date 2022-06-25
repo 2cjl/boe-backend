@@ -39,6 +39,7 @@ func Login(phone, passwd string) *orm.User {
 }
 
 func GetDeviceByMac(mac string) *orm.Device {
+	getInstance()
 	var d orm.Device
 	db.Where("mac = ?", mac).First(&d)
 	if d.ID == 0 {
@@ -48,8 +49,19 @@ func GetDeviceByMac(mac string) *orm.Device {
 }
 
 func GetOrganizationById(id int) *orm.Organization {
+	getInstance()
 	var o orm.Organization
 	db.First(&o, id)
+	if o.ID == 0 {
+		return nil
+	}
+	return &o
+}
+
+func GetOrganizationByUser(uid int) *orm.Organization {
+	getInstance()
+	var o orm.Organization
+	db.First(&o, db.Table("users").Select("organization_id").Where("id = ?", uid))
 	if o.ID == 0 {
 		return nil
 	}
