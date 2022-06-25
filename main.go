@@ -50,7 +50,7 @@ func main() {
 		}
 	}()
 
-	err := http.ListenAndServe(fmt.Sprintf(":%d", websocketPort), nil)
+	err := http.ListenAndServe(fmt.Sprintf("localhost:%d", websocketPort), nil)
 	if err != nil && err != http.ErrServerClosed {
 		log.Fatalf("listen: %s\n", err)
 	}
