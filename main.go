@@ -1,9 +1,12 @@
 package main
 
 import (
+	"boe-backend/internal/db"
 	"boe-backend/internal/devicemanager"
+	"boe-backend/internal/service"
 	"boe-backend/internal/util"
 	"boe-backend/internal/util/config"
+	jwtx "boe-backend/internal/util/jwt"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -38,13 +41,17 @@ func main() {
 	// 注册所有路由
 	util.RegisterRouter(r)
 
-<<<<<<< HEAD
 	http.HandleFunc("/ws", getWebSocketHandler)
+
+	authMiddleware, err := jwtx.GetAuthMiddleware()
+	if err != nil {
+		return
+	}
 
 	// users
 	userRoute := r.Group("/user")
 	userRoute.POST("/login", authMiddleware.LoginHandler)
-	userRoute.POST("/register", registerHandler)
+	userRoute.POST("/register", service.RegisterHandler)
 	// 一组需要验证的路由
 	auth := userRoute.Group("/auth")
 	auth.Use(authMiddleware.MiddlewareFunc())
@@ -85,15 +92,6 @@ func main() {
 
 func getWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
-=======
-	// websocket 相关
-	r.GET("/ws", getWebSocketHandler)
-	util.WatchSignalGrace(r, port)
-}
-
-func getWebSocketHandler(c *gin.Context) {
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
->>>>>>> origin/feat/yuzhanglong
 	if err != nil {
 		log.Println(err)
 		conn.Close()
