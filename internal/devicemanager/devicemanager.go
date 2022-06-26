@@ -160,6 +160,7 @@ func (d *Device) Receive() {
 				continue
 			}
 			info.ID = d.ID
+			info.LastHeartbeat = time.Now()
 			db.GetInstance().Create(&info)
 
 			continue
