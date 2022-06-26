@@ -193,7 +193,7 @@ func (d *Device) SyncPlan() error {
 	var planMsgList []*types.PlanMsg
 	result := map[string]interface{}{
 		"type": typePlanList,
-		"plan": "clclcl",
+		"plan": planMsgList,
 	}
 
 	ins := db.GetInstance()
@@ -243,6 +243,7 @@ func (d *Device) DeletePlan(planIds []int) error {
 
 func (d *Device) writeMsg(data map[string]interface{}) error {
 	msg, err := json.Marshal(data)
+	log.Println(string(msg))
 	if err != nil {
 		return err
 	}
