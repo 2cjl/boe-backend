@@ -193,7 +193,7 @@ func (d *Device) SyncPlan() error {
 	var planMsgList []*types.PlanMsg
 	result := map[string]interface{}{
 		"type": typePlanList,
-		"plan": planMsgList,
+		"plan": "clclcl",
 	}
 
 	ins := db.GetInstance()
