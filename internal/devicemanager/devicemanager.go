@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
+	"gorm.io/gorm/clause"
 	"log"
 	"strconv"
 	"sync"
@@ -161,6 +162,9 @@ func (d *Device) Receive() {
 			info.ID = d.ID
 			info.LastHeartbeat = time.Now()
 			db.GetInstance().Create(&info)
+			db.GetInstance().Clauses(clause.OnConflict{
+				UpdateAll: true,
+			}).Create(&info)
 
 			continue
 		case typeSyncPlan:
