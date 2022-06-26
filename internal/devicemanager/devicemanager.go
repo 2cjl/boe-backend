@@ -3,6 +3,7 @@ package devicemanager
 import (
 	"boe-backend/internal/db"
 	"boe-backend/internal/orm"
+	"boe-backend/internal/types"
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
@@ -170,21 +171,39 @@ func (d *Device) Receive() {
 		case typeSyncPlan:
 			result = map[string]interface{}{
 				"type": typePlanList,
-				"plan": []int{},
 			}
 			//var planList types.PlanMsg
 			var plans []*orm.Plan
-			db.GetInstance().Where("").Find(&plans)
+			var planMsgList []*types.PlanMsg
+			ins := db.GetInstance()
+			// 获取plan
+			ins.Where("id in (?)", ins.Table("plan_device").Select("plan_id").Where("device_id = ?", d.ID)).Find(&plans)
+			// 对于每个plan获取PlayPeriods,并构造返回值
 			for _, plan := range plans {
-				err := db.GetInstance().Model(&plan).Preload("Shows").Association("PlayPeriods").Find(&plan.PlayPeriods)
+				err := ins.Model(&plan).Preload("Shows").Association("PlayPeriods").Find(&plan.PlayPeriods)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
-			}
+				var playPeriodMsgList []types.PlayPeriodMsg
+				for _, v := range plan.PlayPeriods {
+					var p types.PlayPeriodMsg
+					p.HTML = v.Html
+					p.StartTime = v.StartTime
+					p.EndTime = v.EndTime
+					p.LoopMode = v.LoopMode
+					playPeriodMsgList = append(playPeriodMsgList, p)
+				}
+				msg := &types.PlanMsg{}
+				msg.ID = plan.ID
+				msg.Mode = plan.Mode
+				msg.StartDate = plan.StartDate
+				msg.EndDate = plan.EndDate
+				msg.PlayPeriods = playPeriodMsgList
 
-			log.Println(plans)
-			///TODO(vincent)从数据库筛选未安排的计划，返回给设备
+				planMsgList = append(planMsgList, msg)
+			}
+			result["plan"] = planMsgList
 		default:
 			log.Printf("unknown type:%s\n", m["type"].(string))
 			continue
