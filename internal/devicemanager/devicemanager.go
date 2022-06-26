@@ -202,6 +202,7 @@ func (d *Device) SyncPlan() error {
 		return errors.New(fmt.Sprintf("device(%s)id is 0!!!\n", d.Mac))
 	}
 	ins.Where("id in (?)", ins.Table("plan_device").Select("plan_id").Where("device_id = ?", d.ID)).Find(&plans)
+	log.Println("plans len:", len(plans))
 	// 对于每个plan获取PlayPeriods,并构造返回值
 	for _, plan := range plans {
 		err := ins.Model(&plan).Preload("Shows").Association("PlayPeriods").Find(&plan.PlayPeriods)
