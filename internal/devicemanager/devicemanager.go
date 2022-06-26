@@ -168,16 +168,16 @@ func (d *Device) Receive() {
 
 			continue
 		case typeSyncPlan:
-			result = map[string]interface{}{
-				"type": typePlanList,
-			}
-			//var planList types.PlanMsg
 			var plans []*orm.Plan
 			var planMsgList []*types.PlanMsg
+			result = map[string]interface{}{
+				"type": typePlanList,
+				"plan": planMsgList,
+			}
+
 			ins := db.GetInstance()
 			// 获取plan
 			if d.ID == 0 {
-				result["plan"] = []int{}
 				log.Printf("device(%s)id is 0!!!\n", d.Mac)
 				continue
 			}
@@ -207,7 +207,6 @@ func (d *Device) Receive() {
 
 				planMsgList = append(planMsgList, msg)
 			}
-			result["plan"] = planMsgList
 			log.Println(planMsgList)
 		default:
 			log.Printf("unknown type:%s\n", m["type"].(string))
