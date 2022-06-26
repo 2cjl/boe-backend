@@ -83,3 +83,17 @@ func GetPlan(c *gin.Context) {
 		},
 	})
 }
+
+// GetPlanList 获取计划列表
+func GetPlanList(c *gin.Context) {
+	var offset, _ = strconv.Atoi(c.Query("offset"))
+	var count, _ = strconv.Atoi(c.Query("count"))
+	var dbInstance = db.GetInstance()
+	var plans []orm.Plan
+	dbInstance.Limit(count).Offset(offset).Find(&plans)
+	c.JSON(200, gin.H{
+		"data": gin.H{
+			"plans": plans,
+		},
+	})
+}
