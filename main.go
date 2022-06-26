@@ -29,7 +29,7 @@ func main() {
 	r := gin.New()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
-	r.Use(util.Cors())
+	//r.Use(util.Cors())
 
 	// 注册所有路由
 	util.RegisterRouter(r)

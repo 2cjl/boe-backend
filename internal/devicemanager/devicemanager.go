@@ -73,8 +73,11 @@ func (d *Device) InitInfo() {
 	// 获取设备信息
 	data := make(map[string]interface{})
 	data["type"] = typeDeviceInfo
+	log.Println(data)
 	err := d.writeMsg(data)
-	log.Println(err)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (d *Device) Receive() {
