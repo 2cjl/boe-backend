@@ -19,9 +19,6 @@
     "info":{
     }
 }
-{
-    "type":"syncPlan"
-}
 ```
 
 **backend->device**
@@ -35,11 +32,7 @@
     "type":"pong",
 }
 {
-    "type":"planList",
-    "plan":[
-    	{},
-		{},
-    ]
+    "type":"syncPlan"
 }
 {
     "type":"deletePlan",

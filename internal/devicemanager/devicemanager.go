@@ -5,6 +5,8 @@ import (
 	"boe-backend/internal/orm"
 	"boe-backend/internal/types"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
 	"gorm.io/gorm/clause"
@@ -76,6 +78,11 @@ func (d *Device) InitInfo() {
 	data := make(map[string]interface{})
 	data["type"] = typeDeviceInfo
 	err := d.writeMsg(data)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	err = d.SyncPlan()
 	if err != nil {
 		log.Println(err)
 	}
@@ -167,47 +174,6 @@ func (d *Device) Receive() {
 			}).Create(&info)
 
 			continue
-		case typeSyncPlan:
-			var plans []*orm.Plan
-			var planMsgList []*types.PlanMsg
-			result = map[string]interface{}{
-				"type": typePlanList,
-				"plan": planMsgList,
-			}
-
-			ins := db.GetInstance()
-			// 获取plan
-			if d.ID == 0 {
-				log.Printf("device(%s)id is 0!!!\n", d.Mac)
-				continue
-			}
-			ins.Where("id in (?)", ins.Table("plan_device").Select("plan_id").Where("device_id = ?", d.ID)).Find(&plans)
-			// 对于每个plan获取PlayPeriods,并构造返回值
-			for _, plan := range plans {
-				err := ins.Model(&plan).Preload("Shows").Association("PlayPeriods").Find(&plan.PlayPeriods)
-				if err != nil {
-					log.Println(err)
-					continue
-				}
-				var playPeriodMsgList []types.PlayPeriodMsg
-				for _, v := range plan.PlayPeriods {
-					var p types.PlayPeriodMsg
-					p.HTML = v.Html
-					p.StartTime = v.StartTime
-					p.EndTime = v.EndTime
-					p.LoopMode = v.LoopMode
-					playPeriodMsgList = append(playPeriodMsgList, p)
-				}
-				msg := &types.PlanMsg{}
-				msg.ID = plan.ID
-				msg.Mode = plan.Mode
-				msg.StartDate = plan.StartDate
-				msg.EndDate = plan.EndDate
-				msg.PlayPeriods = playPeriodMsgList
-
-				planMsgList = append(planMsgList, msg)
-			}
-			log.Println(planMsgList)
 		default:
 			log.Printf("unknown type:%s\n", m["type"].(string))
 			continue
@@ -218,6 +184,50 @@ func (d *Device) Receive() {
 			return
 		}
 	}
+}
+
+func (d *Device) SyncPlan() error {
+	var plans []*orm.Plan
+	var planMsgList []*types.PlanMsg
+	result := map[string]interface{}{
+		"type": typePlanList,
+		"plan": planMsgList,
+	}
+
+	ins := db.GetInstance()
+	// 获取plan
+	if d.ID == 0 {
+		log.Printf("device(%s)id is 0!!!\n", d.Mac)
+		return errors.New(fmt.Sprintf("device(%s)id is 0!!!\n", d.Mac))
+	}
+	ins.Where("id in (?)", ins.Table("plan_device").Select("plan_id").Where("device_id = ?", d.ID)).Find(&plans)
+	// 对于每个plan获取PlayPeriods,并构造返回值
+	for _, plan := range plans {
+		err := ins.Model(&plan).Preload("Shows").Association("PlayPeriods").Find(&plan.PlayPeriods)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		var playPeriodMsgList []types.PlayPeriodMsg
+		for _, v := range plan.PlayPeriods {
+			var p types.PlayPeriodMsg
+			p.HTML = v.Html
+			p.StartTime = v.StartTime
+			p.EndTime = v.EndTime
+			p.LoopMode = v.LoopMode
+			playPeriodMsgList = append(playPeriodMsgList, p)
+		}
+		msg := &types.PlanMsg{}
+		msg.ID = plan.ID
+		msg.Mode = plan.Mode
+		msg.StartDate = plan.StartDate
+		msg.EndDate = plan.EndDate
+		msg.PlayPeriods = playPeriodMsgList
+
+		planMsgList = append(planMsgList, msg)
+	}
+	log.Println(planMsgList)
+	return d.writeMsg(result)
 }
 
 func (d *Device) DeletePlan(planIds []int) error {
