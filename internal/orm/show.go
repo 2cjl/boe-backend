@@ -18,16 +18,3 @@ type Show struct {
 func (t *Show) TableName() string {
 	return "show"
 }
-
-type PlayPeriodAndShow struct {
-	ID           int            `gorm:"column:id;primary_key"`
-	PlayPeriodID int            `gorm:"column:play_period_id"`
-	ShowID       int            `gorm:"column:show_id"`
-	CreatedAt    time.Time      `gorm:"column:created_at"`
-	UpdatedAt    time.Time      `gorm:"column:updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at"`
-}
-
-func (t *PlayPeriodAndShow) TableName() string {
-	return "play_period_show"
-}
