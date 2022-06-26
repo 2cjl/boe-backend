@@ -13,21 +13,10 @@ type PlayPeriod struct {
 	CreatedAt time.Time      `gorm:"column:created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at"`
+	PlanID    string
+	Plan      Plan
 }
 
 func (t *PlayPeriod) TableName() string {
 	return "play_period"
-}
-
-type PlayPeriodAndPlan struct {
-	ID           int            `gorm:"column:id;primary_key"`
-	PlanID       int            `gorm:"column:plan_id"`
-	PlayPeriodID int            `gorm:"column:play_period_id"`
-	CreatedAt    time.Time      `gorm:"column:created_at"`
-	UpdatedAt    time.Time      `gorm:"column:updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at"`
-}
-
-func (t *PlayPeriodAndPlan) TableName() string {
-	return "play_period_plan"
 }
