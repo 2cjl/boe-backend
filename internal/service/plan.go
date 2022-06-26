@@ -12,7 +12,7 @@ type PlayPeriod struct {
 	StartTime string
 	EndTime   string
 	LoopMode  string
-	ShowIds   []string
+	ShowIds   []int
 }
 
 type CreatePlanRequest struct {
@@ -51,21 +51,28 @@ func CreatePlan(c *gin.Context) {
 
 	// 开始初始化各个时间段，并复制
 	var playPeriods []orm.PlayPeriod
+
+	// 在内存中先初始化实体
 	for _, period := range req.PlayPeriods {
 		var p orm.PlayPeriod
 		p.StartTime = period.StartTime
 		p.EndTime = period.EndTime
 		p.LoopMode = period.LoopMode
+
+		var shows []orm.Show
+		var ins = db.GetInstance()
+		// PREF: 在 for 循环之外合并所有传入的 showID 然后通过一次查询的查到所有用的 show
+		ins.Find(&shows, period.ShowIds)
+		p.Shows = shows
+
 		playPeriods = append(playPeriods, p)
 	}
+
 	plan.PlayPeriods = playPeriods
 
 	var dbInstance = db.GetInstance()
 	// 保存计划实体
 	dbInstance.Create(&plan)
-
-	// 保存时间段
-	//var playPeriodList orm.PlayPeriod
 
 	c.JSON(200, gin.H{
 		"message": "success",
