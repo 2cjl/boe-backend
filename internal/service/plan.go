@@ -3,37 +3,18 @@ package service
 import (
 	"boe-backend/internal/db"
 	"boe-backend/internal/orm"
+	"boe-backend/internal/types"
 	jwtx "boe-backend/internal/util/jwt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"strconv"
 )
 
-type PlayPeriod struct {
-	StartTime string
-	EndTime   string
-	LoopMode  string
-	ShowIds   []int
-}
-
-type CreatePlanRequest struct {
-	// 名称
-	Name string
-	// 播放模式
-	Mode string
-	// 开始时间
-	StartDate string
-	// 结束时间
-	EndDate string
-	// 该计划对应的时间段
-	PlayPeriods []PlayPeriod
-}
-
 func CreatePlan(c *gin.Context) {
 	t, _ := c.Get(jwtx.IdentityKey)
 	var user = t.(*jwtx.TokenUserInfo)
 
-	var req CreatePlanRequest
+	var req types.CreatePlanRequest
 	var ins = db.GetInstance()
 
 	err := c.BindJSON(&req)

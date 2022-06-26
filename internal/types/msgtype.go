@@ -1,4 +1,4 @@
-package msgtype
+package types
 
 type PlanMsg struct {
 	ID          int    `json:"id"`
