@@ -2,7 +2,6 @@ package devicemanager
 
 import (
 	"boe-backend/internal/db"
-	"boe-backend/internal/msgtype"
 	"boe-backend/internal/orm"
 	"encoding/json"
 	"github.com/gorilla/websocket"
@@ -135,13 +134,19 @@ func (d *Device) Receive() {
 			d.RunningTime = int(m["runningTime"].(float64))
 			d.PlanID = int(m["planId"].(float64))
 		case typeDeviceInfo:
-			var info msgtype.DeviceInfoMsg
+			var info orm.DeviceInfo
 			err := mapstructure.Decode(m["info"], &info)
 			if err != nil {
 				log.Println(err)
 				continue
 			}
 			log.Println(info)
+			if d.ID == 0 {
+				continue
+			}
+			info.ID = d.ID
+			db.GetInstance().Create(&info)
+
 			continue
 		case typeSyncPlan:
 			result = map[string]interface{}{
