@@ -52,4 +52,8 @@ func RegisterRouter(r *gin.Engine) {
 	groupRoute.GET("/:id", service.GetGroupInfoHandler)
 	groupRoute.POST("", service.AddGroupHandler)
 
+	// === 文件相关路由 ===
+	fileRoute := r.Group("file")
+	fileRoute.Use(authMiddleware.MiddlewareFunc())
+	fileRoute.GET("/presign/:path", service.PreSignHandler)
 }

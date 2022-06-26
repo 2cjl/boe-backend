@@ -56,6 +56,7 @@ type Config struct {
 		Port      string
 		AccessKey string
 		SecretKey string
+		Bucket    string
 	} `mapstructure:"minio"`
 
 	//Redis struct {
