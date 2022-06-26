@@ -4,6 +4,7 @@ type PlayPeriod struct {
 	StartTime string
 	EndTime   string
 	LoopMode  string
+	Html      string
 	ShowIds   []int
 }
 

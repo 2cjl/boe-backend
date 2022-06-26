@@ -172,7 +172,18 @@ func (d *Device) Receive() {
 				"type": typePlanList,
 				"plan": []int{},
 			}
-			//var planList msgtype.PlanMsg
+			//var planList types.PlanMsg
+			var plans []*orm.Plan
+			db.GetInstance().Where("").Find(&plans)
+			for _, plan := range plans {
+				err := db.GetInstance().Model(&plan).Preload("Shows").Association("PlayPeriods").Find(&plan.PlayPeriods)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+			}
+
+			log.Println(plans)
 			///TODO(vincent)从数据库筛选未安排的计划，返回给设备
 		default:
 			log.Printf("unknown type:%s\n", m["type"].(string))

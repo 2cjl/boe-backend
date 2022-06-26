@@ -23,3 +23,13 @@ type Plan struct {
 func (t *Plan) TableName() string {
 	return "plan"
 }
+
+type PlanDevice struct {
+	ID       int `gorm:"column:id;primary_key"`
+	PlanID   int `gorm:"column:plan_id"`
+	DeviceID int `gorm:"column:device_id"`
+}
+
+func (t *PlanDevice) TableName() string {
+	return "plan_device"
+}

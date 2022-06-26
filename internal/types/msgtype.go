@@ -4,6 +4,7 @@ type PlanMsg []struct {
 	ID          int    `json:"id"`
 	StartDate   string `json:"startDate"`
 	EndDate     string `json:"endDate"`
+	Mode        string `json:"mode"`
 	PlayPeriods []struct {
 		StartTime string `json:"startTime"`
 		EndTime   string `json:"endTime"`

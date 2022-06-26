@@ -41,6 +41,7 @@ func CreatePlan(c *gin.Context) {
 		p.StartTime = period.StartTime
 		p.EndTime = period.EndTime
 		p.LoopMode = period.LoopMode
+		p.Html = period.Html
 
 		var shows []orm.Show
 		// PREF: 在 for 循环之外合并所有传入的 showID 然后通过一次查询的查到所有用的 show

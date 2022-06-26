@@ -11,6 +11,7 @@ type PlayPeriod struct {
 	StartTime string         `gorm:"column:start_time"`
 	EndTime   string         `gorm:"column:end_time"`
 	LoopMode  string         `gorm:"column:loop_mode"`
+	Html      string         `gorm:"column:html"`
 	CreatedAt time.Time      `gorm:"column:created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at"`
