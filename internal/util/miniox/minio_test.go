@@ -1,4 +1,4 @@
-package minio
+package miniox
 
 import (
 	"boe-backend/internal/util/config"
@@ -7,6 +7,4 @@ import (
 
 func TestMinio(t *testing.T) {
 	config.InitViper()
-	Init()
-	PreSignObject()
 }

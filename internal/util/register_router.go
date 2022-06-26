@@ -56,4 +56,9 @@ func RegisterRouter(r *gin.Engine) {
 	planRoute := r.Group("/plan")
 	planRoute.Use(authMiddleware.MiddlewareFunc())
 	planRoute.POST("/create", service.CreatePlan)
+
+	// === 文件相关路由 ===
+	fileRoute := r.Group("file")
+	fileRoute.Use(authMiddleware.MiddlewareFunc())
+	fileRoute.POST("/presign", service.PreSignHandler)
 }

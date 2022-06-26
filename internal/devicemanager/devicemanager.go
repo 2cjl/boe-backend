@@ -5,6 +5,7 @@ import (
 	"boe-backend/internal/orm"
 	"encoding/json"
 	"github.com/gorilla/websocket"
+	"github.com/mitchellh/mapstructure"
 	"log"
 	"strconv"
 	"sync"
@@ -27,8 +28,8 @@ const (
 	writeTimeout = time.Second * 8
 	readTimeout  = time.Second * 8
 
-	DeviceOffline = "offline"
-	DeviceOnline  = "online"
+	DeviceOffline = "OFFLINE"
+	DeviceOnline  = "ONLINE"
 )
 
 var (
@@ -68,6 +69,15 @@ func (d *Device) InitInfo() {
 	e := NewDeviceEvent(device.Name, device.OrganizationID, true)
 	db.GetInstance().Create(e)
 	db.GetInstance().Model(device).Update("state", DeviceOnline)
+
+	// 获取设备信息
+	data := make(map[string]interface{})
+	data["type"] = typeDeviceInfo
+	log.Println(data)
+	err := d.writeMsg(data)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (d *Device) Receive() {
@@ -110,8 +120,14 @@ func (d *Device) Receive() {
 			result = map[string]interface{}{
 				"type": typeHi,
 			}
-
-			mac := m["mac"].(string)
+			var mac string
+			if v, ok := m["mac"]; ok && v != nil {
+				mac = v.(string)
+			} else {
+				result["msg"] = "fail: mac is empty"
+				log.Println("fail: mac is empty")
+				return
+			}
 			d.Mac = mac
 			deviceLock.Lock()
 			if devices[mac] != nil {
@@ -133,7 +149,19 @@ func (d *Device) Receive() {
 			d.RunningTime = int(m["runningTime"].(float64))
 			d.PlanID = int(m["planId"].(float64))
 		case typeDeviceInfo:
-			///TODO(vincent)获取设备信息，同步到数据库
+			var info orm.DeviceInfo
+			err := mapstructure.Decode(m["info"], &info)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			log.Println(info)
+			if d.ID == 0 {
+				continue
+			}
+			info.ID = d.ID
+			db.GetInstance().Create(&info)
+
 			continue
 		case typeSyncPlan:
 			result = map[string]interface{}{
