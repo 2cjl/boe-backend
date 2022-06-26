@@ -28,8 +28,8 @@ const (
 	writeTimeout = time.Second * 8
 	readTimeout  = time.Second * 8
 
-	DeviceOffline = "offline"
-	DeviceOnline  = "online"
+	DeviceOffline = "OFFLINE"
+	DeviceOnline  = "ONLINE"
 )
 
 var (
@@ -69,6 +69,12 @@ func (d *Device) InitInfo() {
 	e := NewDeviceEvent(device.Name, device.OrganizationID, true)
 	db.GetInstance().Create(e)
 	db.GetInstance().Model(device).Update("state", DeviceOnline)
+
+	// 获取设备信息
+	data := make(map[string]interface{})
+	data["type"] = typeDeviceInfo
+	err := d.writeMsg(data)
+	log.Println(err)
 }
 
 func (d *Device) Receive() {
