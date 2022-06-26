@@ -12,7 +12,8 @@ type Plan struct {
 	Mode        string         `gorm:"column:mode"`
 	StartDate   string         `gorm:"column:start_date"` //2022-06-25
 	EndDate     string         `gorm:"column:end_date"`   //2022-06-25
-	Author      string         `gorm:"column:author"`
+	UserID      int            `gorm:"column:user_id"`
+	Author      User           `gorm:"foreignKey:UserID;references:ID"`
 	CreatedAt   time.Time      `gorm:"column:created_at"`
 	UpdatedAt   time.Time      `gorm:"column:updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at"`

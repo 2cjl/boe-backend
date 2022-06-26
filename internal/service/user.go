@@ -1,6 +1,8 @@
 package service
 
 import (
+	"boe-backend/internal/db"
+	"boe-backend/internal/orm"
 	jwtx "boe-backend/internal/util/jwt"
 	"github.com/gin-gonic/gin"
 )
@@ -43,4 +45,11 @@ func RegisterHandler(c *gin.Context) {
 	c.JSON(200, gin.H{
 		//"token": jwtx.GenerateToken(id),
 	})
+}
+
+func GetUserById(id string) orm.User {
+	var ins = db.GetInstance()
+	var user orm.User
+	ins.First(&user, id)
+	return user
 }
