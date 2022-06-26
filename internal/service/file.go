@@ -7,12 +7,20 @@ import (
 	"log"
 )
 
+type PathInfo struct {
+	Path string `json:"path" jsonschema:"required"`
+}
+
 func PreSignHandler(c *gin.Context) {
 	t, _ := c.Get(jwtx.IdentityKey)
 	info := t.(*jwtx.TokenUserInfo)
-	log.Println(info)
-	path := c.Param("path")
-	url := miniox.PreSignObject(path)
+	var pathInfo PathInfo
+	err := c.BindJSON(&pathInfo)
+	if err != nil {
+		return
+	}
+	url := miniox.PreSignObject(info.OrganizationID + "/" + pathInfo.Path)
+	log.Println(url)
 	if url == nil {
 		c.JSON(200, gin.H{
 			"code":    500,

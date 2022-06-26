@@ -55,5 +55,5 @@ func RegisterRouter(r *gin.Engine) {
 	// === 文件相关路由 ===
 	fileRoute := r.Group("file")
 	fileRoute.Use(authMiddleware.MiddlewareFunc())
-	fileRoute.GET("/presign/:path", service.PreSignHandler)
+	fileRoute.POST("/presign", service.PreSignHandler)
 }
