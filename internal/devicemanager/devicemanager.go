@@ -156,7 +156,6 @@ func (d *Device) Receive() {
 				log.Println(err)
 				continue
 			}
-			log.Println(info)
 			if d.ID == 0 {
 				continue
 			}
@@ -177,6 +176,11 @@ func (d *Device) Receive() {
 			var planMsgList []*types.PlanMsg
 			ins := db.GetInstance()
 			// 获取plan
+			if d.ID == 0 {
+				result["plan"] = []int{}
+				log.Printf("device(%s)id is 0!!!\n", d.Mac)
+				continue
+			}
 			ins.Where("id in (?)", ins.Table("plan_device").Select("plan_id").Where("device_id = ?", d.ID)).Find(&plans)
 			// 对于每个plan获取PlayPeriods,并构造返回值
 			for _, plan := range plans {
@@ -204,6 +208,7 @@ func (d *Device) Receive() {
 				planMsgList = append(planMsgList, msg)
 			}
 			result["plan"] = planMsgList
+			log.Println(planMsgList)
 		default:
 			log.Printf("unknown type:%s\n", m["type"].(string))
 			continue
