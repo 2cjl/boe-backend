@@ -228,6 +228,7 @@ func (d *Device) SyncPlan() error {
 		planMsgList = append(planMsgList, msg)
 	}
 	result["plan"] = planMsgList
+	log.Println("len:", len(planMsgList))
 	return d.writeMsg(result)
 }
 
