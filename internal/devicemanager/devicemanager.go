@@ -193,7 +193,6 @@ func (d *Device) SyncPlan() error {
 	var planMsgList []*types.PlanMsg
 	result := map[string]interface{}{
 		"type": typePlanList,
-		"plan": planMsgList,
 	}
 
 	ins := db.GetInstance()
@@ -228,6 +227,7 @@ func (d *Device) SyncPlan() error {
 
 		planMsgList = append(planMsgList, msg)
 	}
+	result["plan"] = planMsgList
 	return d.writeMsg(result)
 }
 
@@ -239,7 +239,6 @@ func (d *Device) DeletePlan(planIds []int) error {
 }
 
 func (d *Device) writeMsg(data map[string]interface{}) error {
-	log.Println(data["plan"])
 	msg, err := json.Marshal(data)
 	log.Println(string(msg))
 	if err != nil {
