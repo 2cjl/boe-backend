@@ -120,8 +120,14 @@ func (d *Device) Receive() {
 			result = map[string]interface{}{
 				"type": typeHi,
 			}
-
-			mac := m["mac"].(string)
+			var mac string
+			if v, ok := m["mac"]; ok && v != nil {
+				mac = v.(string)
+			} else {
+				result["msg"] = "fail: mac is empty"
+				log.Println("fail: mac is empty")
+				return
+			}
 			d.Mac = mac
 			deviceLock.Lock()
 			if devices[mac] != nil {

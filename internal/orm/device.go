@@ -35,3 +35,7 @@ type DeviceInfo struct {
 	UpdatedAt     time.Time      `gorm:"column:updated_at"`
 	DeletedAt     gorm.DeletedAt `gorm:"column:deleted_at"`
 }
+
+func (i *DeviceInfo) TableName() string {
+	return "device_info"
+}
