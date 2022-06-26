@@ -49,8 +49,8 @@ func CreatePlan(c *gin.Context) {
 	// 初始设置为未发布状态
 	plan.State = "NOT_RELEASED"
 
+	// 开始初始化各个时间段，并复制
 	var playPeriods []orm.PlayPeriod
-
 	for _, period := range req.PlayPeriods {
 		var p orm.PlayPeriod
 		p.StartTime = period.StartTime
@@ -58,7 +58,6 @@ func CreatePlan(c *gin.Context) {
 		p.LoopMode = period.LoopMode
 		playPeriods = append(playPeriods, p)
 	}
-
 	plan.PlayPeriods = playPeriods
 
 	var dbInstance = db.GetInstance()

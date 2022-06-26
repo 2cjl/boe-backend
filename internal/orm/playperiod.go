@@ -13,8 +13,8 @@ type PlayPeriod struct {
 	CreatedAt time.Time      `gorm:"column:created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at"`
-	PlanID    string
-	Plan      Plan
+	// 对应的计划 ID
+	PlanID string
 }
 
 func (t *PlayPeriod) TableName() string {
