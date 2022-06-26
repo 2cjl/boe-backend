@@ -59,7 +59,8 @@ func RegisterRouter(r *gin.Engine) {
 	planRoute := r.Group("/plan")
 	planRoute.Use(authMiddleware.MiddlewareFunc())
 	planRoute.POST("/create", service.CreatePlan)
-	planRoute.POST("/get_plan", service.GetPlan)
+	planRoute.GET("/get_plan", service.GetPlan)
+	planRoute.GET("/get_plan_list", service.GetPlanList)
 
 	// === 文件相关路由 ===
 	fileRoute := r.Group("file")
