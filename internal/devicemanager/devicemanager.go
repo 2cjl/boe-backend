@@ -2,9 +2,11 @@ package devicemanager
 
 import (
 	"boe-backend/internal/db"
+	"boe-backend/internal/msgtype"
 	"boe-backend/internal/orm"
 	"encoding/json"
 	"github.com/gorilla/websocket"
+	"github.com/mitchellh/mapstructure"
 	"log"
 	"strconv"
 	"sync"
@@ -133,7 +135,13 @@ func (d *Device) Receive() {
 			d.RunningTime = int(m["runningTime"].(float64))
 			d.PlanID = int(m["planId"].(float64))
 		case typeDeviceInfo:
-			///TODO(vincent)获取设备信息，同步到数据库
+			var info msgtype.DeviceInfoMsg
+			err := mapstructure.Decode(m["info"], &info)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			log.Println(info)
 			continue
 		case typeSyncPlan:
 			result = map[string]interface{}{
