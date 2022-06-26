@@ -66,16 +66,13 @@ func GetPlan(c *gin.Context) {
 	var planId = c.Query("planId")
 	var dbInstance = db.GetInstance()
 	var plan orm.Plan
-	var author orm.User
 
 	dbInstance.Where("id = ?", planId).Find(&plan)
 
-	err := dbInstance.Model(&plan).Association("Author").Find(&author)
+	err := dbInstance.Model(&plan).Association("Author").Find(&plan.Author)
 	if err != nil {
 		return
 	}
-
-	plan.Author = author
 
 	c.JSON(200, gin.H{
 		"data": gin.H{
@@ -94,6 +91,24 @@ func GetPlanList(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"data": gin.H{
 			"plans": plans,
+		},
+	})
+}
+
+func GetPlanDetail(c *gin.Context) {
+	var planId = c.Query("planId")
+	var dbInstance = db.GetInstance()
+	var plan orm.Plan
+
+	dbInstance.Where("id = ?", planId).Find(&plan)
+
+	// 连结用户信息
+	dbInstance.Model(&plan).Association("Author").Find(&plan.Author)
+	dbInstance.Model(&plan).Preload("Shows").Association("PlayPeriods").Find(&plan.PlayPeriods)
+
+	c.JSON(200, gin.H{
+		"data": gin.H{
+			"plan": plan,
 		},
 	})
 }
