@@ -228,9 +228,6 @@ func (d *Device) SyncPlan() error {
 
 		planMsgList = append(planMsgList, msg)
 	}
-	log.Println("len:", len(planMsgList))
-
-	log.Println(planMsgList[0])
 	return d.writeMsg(result)
 }
 
@@ -242,6 +239,7 @@ func (d *Device) DeletePlan(planIds []int) error {
 }
 
 func (d *Device) writeMsg(data map[string]interface{}) error {
+	log.Println(data["plan"])
 	msg, err := json.Marshal(data)
 	log.Println(string(msg))
 	if err != nil {

@@ -32,7 +32,7 @@
     "type":"pong",
 }
 {
-    "type":"syncPlan"
+    "type":"planList"
 }
 {
     "type":"deletePlan",
