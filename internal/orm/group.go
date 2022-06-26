@@ -16,16 +16,13 @@ type Group struct {
 }
 
 func (t *Group) TableName() string {
-	return "group"
+	return "groups"
 }
 
 type GroupDevice struct {
-	ID        int            `gorm:"column:id;primary_key"`
-	DeviceID  int            `gorm:"column:device_id"`
-	GroupID   int            `gorm:"column:group_id"`
-	CreatedAt time.Time      `gorm:"column:created_at"`
-	UpdatedAt time.Time      `gorm:"column:updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at"`
+	ID       int `gorm:"column:id;primary_key"`
+	DeviceID int `gorm:"column:device_id"`
+	GroupID  int `gorm:"column:group_id"`
 }
 
 func (t *GroupDevice) TableName() string {

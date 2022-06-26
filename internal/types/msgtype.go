@@ -1,6 +1,6 @@
 package types
 
-type PlanMsg struct {
+type PlanMsg []struct {
 	ID          int    `json:"id"`
 	StartDate   string `json:"startDate"`
 	EndDate     string `json:"endDate"`

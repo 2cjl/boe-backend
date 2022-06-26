@@ -4,7 +4,6 @@ import (
 	"boe-backend/internal/db"
 	"boe-backend/internal/util/config"
 	"errors"
-	"log"
 	"strconv"
 	"time"
 
@@ -83,7 +82,6 @@ func getAuthMiddleware(secret []byte, timeout, maxRefresh time.Duration) (*jwt.G
 			}
 			user := db.Login(phone, passwd)
 			if user == nil {
-				log.Println(err)
 				return nil, jwt.ErrFailedAuthentication
 			}
 			o := db.GetOrganizationByUser(user.ID)

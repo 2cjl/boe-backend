@@ -12,12 +12,19 @@ func TestGjson(t *testing.T) {
 	log.Println(value)
 }
 
+type test struct {
+	Str string `json:"str"`
+}
+
 func TestJson(t *testing.T) {
 	m := make(map[string]interface{})
-	err := json.Unmarshal([]byte("{\n    \"type\":\"hello\",\n    \"mac\":{\n\t\"hello\":\"world\"\n}\n}"), &m)
+	x := make([]*test, 3)
+	x[0] = &test{Str: "123"}
+	m["type"] = x
+	marshal, err := json.Marshal(m)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	log.Println(m["mac"].(map[string]interface{})["hello"])
+	log.Println(string(marshal))
 }

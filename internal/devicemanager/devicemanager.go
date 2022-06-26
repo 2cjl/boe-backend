@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
+	"gorm.io/gorm/clause"
 	"log"
 	"strconv"
 	"sync"
@@ -73,7 +74,6 @@ func (d *Device) InitInfo() {
 	// 获取设备信息
 	data := make(map[string]interface{})
 	data["type"] = typeDeviceInfo
-	log.Println(data)
 	err := d.writeMsg(data)
 	if err != nil {
 		log.Println(err)
@@ -98,7 +98,7 @@ func (d *Device) Receive() {
 	}()
 	defer d.Conn.Close()
 	for {
-		d.Conn.SetReadDeadline(time.Now().Add(readTimeout))
+		//d.Conn.SetReadDeadline(time.Now().Add(readTimeout))
 		_, msg, err := d.Conn.ReadMessage()
 		if err != nil {
 			// 网络错误则直接返回，等待客户端重连
@@ -160,7 +160,11 @@ func (d *Device) Receive() {
 				continue
 			}
 			info.ID = d.ID
+			info.LastHeartbeat = time.Now()
 			db.GetInstance().Create(&info)
+			db.GetInstance().Clauses(clause.OnConflict{
+				UpdateAll: true,
+			}).Create(&info)
 
 			continue
 		case typeSyncPlan:
@@ -168,6 +172,7 @@ func (d *Device) Receive() {
 				"type": typePlanList,
 				"plan": []int{},
 			}
+			//var planList msgtype.PlanMsg
 			///TODO(vincent)从数据库筛选未安排的计划，返回给设备
 		default:
 			log.Printf("unknown type:%s\n", m["type"].(string))
