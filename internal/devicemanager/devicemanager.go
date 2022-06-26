@@ -73,7 +73,6 @@ func (d *Device) InitInfo() {
 	// 获取设备信息
 	data := make(map[string]interface{})
 	data["type"] = typeDeviceInfo
-	log.Println(data)
 	err := d.writeMsg(data)
 	if err != nil {
 		log.Println(err)
@@ -98,7 +97,7 @@ func (d *Device) Receive() {
 	}()
 	defer d.Conn.Close()
 	for {
-		d.Conn.SetReadDeadline(time.Now().Add(readTimeout))
+		//d.Conn.SetReadDeadline(time.Now().Add(readTimeout))
 		_, msg, err := d.Conn.ReadMessage()
 		if err != nil {
 			// 网络错误则直接返回，等待客户端重连
