@@ -109,9 +109,11 @@ func (d *Device) Receive() {
 		//d.Conn.SetReadDeadline(time.Now().Add(readTimeout))
 		_, msg, err := d.Conn.ReadMessage()
 		if err != nil {
-			// 网络错误则直接返回，等待客户端重连
-			log.Printf("device(%s)read for ws fail: %s\n", d.Mac, err.Error())
-			return
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("device(%s) unexpected close: %v", d.Mac, err)
+				return
+			}
+			log.Printf("device(%s)read for ws fail: %v\n", d.Mac, err)
 		}
 		log.Printf("recv: %s", msg)
 		m := make(map[string]interface{})
