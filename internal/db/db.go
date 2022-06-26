@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"log"
 	"sync"
 )
 
@@ -73,11 +74,11 @@ func GetOrganizationByUser(uid int) *orm.Organization {
 	return &o
 }
 
-// GetAllEvents 获取所有的事件
-func GetAllEvents(organizationId string) []orm.Event {
+// GetRecentEvents 获取最近的30条事件
+func GetRecentEvents(organizationId string) []orm.Event {
 	getInstance()
 	var events []orm.Event
-	db.Find(&events, "organization_id = ?", organizationId)
+	db.Limit(30).Order("time desc").Find(&events, "organization_id = ?", organizationId)
 	return events
 }
 
@@ -88,7 +89,43 @@ func GetAllGroups(organizationId string) []orm.Group {
 	return groups
 }
 
-func GetDeviceInGroup(groupId string) {
+type GroupCnt struct {
+	ID   int
+	Name string
+	Cnt  int
+}
+
+func GetGroupDeviceCnt(organizationId string) []GroupCnt {
 	getInstance()
-	///TODO
+	rows, err := db.Raw("select group_id id, g.name name, count(*) cnt FROM group_device, `groups` g  WHERE g.id = group_device.group_id AND g.organization_id = ? GROUP BY group_id", organizationId).Rows()
+
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	var c []GroupCnt
+	for rows.Next() {
+		var g GroupCnt
+		err := rows.Scan(&g.ID, &g.Name, &g.Cnt)
+		if err != nil {
+			log.Println(err)
+			return nil
+		}
+		c = append(c, g)
+	}
+	return c
+}
+
+func GetAllDevice(organizationId string) []orm.Device {
+	getInstance()
+	var devices []orm.Device
+	db.Find(&devices, "organization_id = ?", organizationId)
+	return devices
+}
+
+func GetDeviceByState(organizationId string, state string) []orm.Device {
+	getInstance()
+	var devices []orm.Device
+	db.Find(&devices, "organization_id = ? AND state = ?", organizationId, state)
+	return devices
 }

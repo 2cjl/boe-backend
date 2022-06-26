@@ -172,6 +172,7 @@ func (d *Device) Receive() {
 				"type": typePlanList,
 				"plan": []int{},
 			}
+			//var planList msgtype.PlanMsg
 			///TODO(vincent)从数据库筛选未安排的计划，返回给设备
 		default:
 			log.Printf("unknown type:%s\n", m["type"].(string))
