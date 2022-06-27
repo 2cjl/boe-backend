@@ -92,10 +92,15 @@ func GetPlanList(c *gin.Context) {
 	var dbInstance = db.GetInstance()
 	var plans []orm.Plan
 	dbInstance.Limit(count).Offset(offset).Find(&plans)
+
+	var total int64
+	dbInstance.Model(&orm.Plan{}).Count(&total)
+
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
 		"data": gin.H{
+			"total": total,
 			"plans": plans,
 		},
 	})
