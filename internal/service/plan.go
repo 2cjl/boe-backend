@@ -58,6 +58,7 @@ func CreatePlan(c *gin.Context) {
 	dbInstance.Create(&plan)
 
 	c.JSON(200, gin.H{
+		"code":    200,
 		"message": "success",
 	})
 }
@@ -76,6 +77,8 @@ func GetPlan(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
 		"data": gin.H{
 			"plan": plan,
 		},
@@ -90,12 +93,15 @@ func GetPlanList(c *gin.Context) {
 	var plans []orm.Plan
 	dbInstance.Limit(count).Offset(offset).Find(&plans)
 	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
 		"data": gin.H{
 			"plans": plans,
 		},
 	})
 }
 
+// GetPlanDetail 获取计划详细信息
 func GetPlanDetail(c *gin.Context) {
 	var planId = c.Query("planId")
 	var dbInstance = db.GetInstance()
@@ -108,12 +114,15 @@ func GetPlanDetail(c *gin.Context) {
 	dbInstance.Model(&plan).Preload("Shows").Association("PlayPeriods").Find(&plan.PlayPeriods)
 
 	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
 		"data": gin.H{
 			"plan": plan,
 		},
 	})
 }
 
+// DeletePlan 删除某个计划
 func DeletePlan(c *gin.Context) {
 	var planId = c.Query("planId")
 	var dbInstance = db.GetInstance()
