@@ -19,7 +19,7 @@ func PreSignHandler(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	url := miniox.PreSignObject(info.OrganizationID + "/" + pathInfo.Path)
+	url := miniox.PreSignObject(info.ID + "/" + pathInfo.Path)
 	log.Println(url)
 	if url == nil {
 		c.JSON(200, gin.H{
