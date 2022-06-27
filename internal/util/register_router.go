@@ -62,6 +62,7 @@ func RegisterRouter(r *gin.Engine) {
 	planRoute.GET("/get_plan", service.GetPlan)
 	planRoute.GET("/get_plan_list", service.GetPlanList)
 	planRoute.GET("/get_plan_detail", service.GetPlanDetail)
+	planRoute.DELETE("/delete_plan", service.DeletePlan)
 
 	// === 文件相关路由 ===
 	fileRoute := r.Group("file")
