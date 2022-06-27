@@ -7,6 +7,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
+	"strings"
 	"sync"
 )
 
@@ -82,13 +83,6 @@ func GetRecentEvents(organizationId string) []orm.Event {
 	return events
 }
 
-func GetAllGroups(organizationId string) []orm.Group {
-	getInstance()
-	var groups []orm.Group
-	db.Find(&groups, "organization_id = ?", organizationId)
-	return groups
-}
-
 type GroupCnt struct {
 	ID   int
 	Name string
@@ -114,6 +108,49 @@ func GetGroupDeviceCnt(organizationId string) []GroupCnt {
 		c = append(c, g)
 	}
 	return c
+}
+
+func GetGroupDeviceCntByGroup(groupIdList []orm.Group) []GroupCnt {
+	if groupIdList == nil || len(groupIdList) == 0 {
+		return []GroupCnt{}
+	}
+	var ids []interface{}
+	for _, v := range groupIdList {
+		ids = append(ids, v.ID)
+	}
+
+	getInstance()
+	rows, err := db.Raw(`select group_id id, g.name name, count(*) cnt FROM group_device, groups g  WHERE g.id = group_device.group_id AND g.id in (?`+strings.Repeat(",?", len(ids)-1)+`)`+` GROUP BY group_id`, ids...).Rows()
+
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	var c []GroupCnt
+	for rows.Next() {
+		var g GroupCnt
+		err := rows.Scan(&g.ID, &g.Name, &g.Cnt)
+		if err != nil {
+			log.Println(err)
+			return nil
+		}
+		c = append(c, g)
+	}
+	return c
+}
+
+func GetDevicesByGroupDevice(groupDevices []orm.GroupDevice) []orm.Device {
+	if groupDevices == nil || len(groupDevices) == 0 {
+		return []orm.Device{}
+	}
+	getInstance()
+	var devices []orm.Device
+	var ids []int
+	for _, v := range groupDevices {
+		ids = append(ids, v.DeviceID)
+	}
+	db.Find(&devices, ids)
+	return devices
 }
 
 func GetAllDevice(organizationId string) []orm.Device {

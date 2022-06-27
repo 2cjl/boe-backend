@@ -52,7 +52,7 @@ func RegisterRouter(r *gin.Engine) {
 	groupRoute := r.Group("/group")
 	groupRoute.Use(authMiddleware.MiddlewareFunc())
 	groupRoute.GET("/all", service.GetGroupListHandler)
-	groupRoute.GET("/:id", service.GetGroupInfoHandler)
+	groupRoute.GET("/devices/:id", service.GetGroupDevicesHandler)
 	groupRoute.POST("", service.AddGroupHandler)
 
 	// === 计划相关路由 ===

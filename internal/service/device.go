@@ -1,22 +1,70 @@
 package service
 
 import (
+	"boe-backend/internal/db"
+	"boe-backend/internal/devicemanager"
+	"boe-backend/internal/orm"
+	"boe-backend/internal/types"
 	jwtx "boe-backend/internal/util/jwt"
 	"github.com/gin-gonic/gin"
 	"log"
+	"strconv"
 )
 
 func AddDeviceHandler(c *gin.Context) {
 	t, _ := c.Get(jwtx.IdentityKey)
 	info := t.(*jwtx.TokenUserInfo)
-	log.Println(info)
-	c.JSON(200, gin.H{})
+
+	var req types.AddDeviceReq
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		log.Println(err)
+		c.JSON(200, gin.H{
+			"code":  400,
+			"error": "Bad request parameter",
+		})
+		return
+	}
+
+	var device orm.Device
+	oid, _ := strconv.Atoi(info.OrganizationID)
+	device.OrganizationID = oid
+	device.Name = req.Name
+	device.Mac = req.Mac
+	device.State = devicemanager.DeviceOffline
+	db.GetInstance().Create(&device)
+
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+	})
 }
 
 func GetDeviceListHandler(c *gin.Context) {
+	var offset, _ = strconv.Atoi(c.Query("offset"))
+	var count, _ = strconv.Atoi(c.Query("count"))
+	var dbInstance = db.GetInstance()
+	var devices []orm.Device
+	dbInstance.Limit(count).Offset(offset).Find(&devices)
 
+	var total int64
+	dbInstance.Table("devices").Count(&total)
+
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+		"data": gin.H{
+			"total":   total,
+			"devices": devices,
+		},
+	})
 }
 
 func GetDeviceInfoHandler(c *gin.Context) {
 
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+		"data":    gin.H{},
+	})
 }

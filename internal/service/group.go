@@ -16,7 +16,7 @@ func AddGroupHandler(c *gin.Context) {
 
 	var group types.AddGroupReq
 	err := c.ShouldBindJSON(&group)
-	if err != nil || strconv.Itoa(group.OrganizationID) != info.OrganizationID {
+	if err != nil {
 		c.JSON(200, gin.H{
 			"code":  400,
 			"error": "Bad request parameter",
@@ -26,7 +26,8 @@ func AddGroupHandler(c *gin.Context) {
 
 	var groupOrm orm.Group
 	groupOrm.Name = group.Name
-	groupOrm.OrganizationID = group.OrganizationID
+	oid, _ := strconv.Atoi(info.OrganizationID)
+	groupOrm.OrganizationID = oid
 	groupOrm.Describe = group.Describe
 	res := db.GetInstance().Create(&groupOrm)
 	if res.Error != nil {
@@ -55,8 +56,15 @@ func AddGroupHandler(c *gin.Context) {
 func GetGroupListHandler(c *gin.Context) {
 	t, _ := c.Get(jwtx.IdentityKey)
 	info := t.(*jwtx.TokenUserInfo)
-	list := db.GetAllGroups(info.OrganizationID)
-	gc := db.GetGroupDeviceCnt(info.OrganizationID)
+	var offset, _ = strconv.Atoi(c.Query("offset"))
+	var count, _ = strconv.Atoi(c.Query("count"))
+
+	var groups []orm.Group
+	db.GetInstance().Limit(count).Offset(offset).Find(&groups, "organization_id = ?", info.OrganizationID)
+	gc := db.GetGroupDeviceCntByGroup(groups)
+
+	var total int64
+	db.GetInstance().Table("groups").Count(&total)
 
 	m := make(map[int]int)
 	for _, v := range gc {
@@ -66,15 +74,27 @@ func GetGroupListHandler(c *gin.Context) {
 		"code":    200,
 		"message": "success",
 		"data": gin.H{
-			"groups":    list,
+			"groups":    groups,
 			"deviceCnt": m,
+			"total":     total,
 		},
 	})
 }
 
-func GetGroupInfoHandler(c *gin.Context) {
-	t, _ := c.Get(jwtx.IdentityKey)
-	info := t.(*jwtx.TokenUserInfo)
-	log.Println(info)
-	c.JSON(200, gin.H{})
+func GetGroupDevicesHandler(c *gin.Context) {
+	var groupDevices []orm.GroupDevice
+	gid, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(400, gin.H{
+			"error": "Bad request parameter",
+		})
+		return
+	}
+	db.GetInstance().Find(&groupDevices, "group_id = ?", gid)
+	devices := db.GetDevicesByGroupDevice(groupDevices)
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+		"data":    devices,
+	})
 }
