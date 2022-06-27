@@ -98,3 +98,15 @@ func GetGroupDevicesHandler(c *gin.Context) {
 		"data":    devices,
 	})
 }
+
+func DeleteGroup(c *gin.Context) {
+	gid := c.Param("id")
+
+	var dbInstance = db.GetInstance()
+	var group orm.Group
+	dbInstance.Where("id = ?", gid).Find(&group).Delete(&group)
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+	})
+}

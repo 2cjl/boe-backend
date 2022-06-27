@@ -37,6 +37,7 @@ func AddDeviceHandler(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
+		"data":    device,
 	})
 }
 
@@ -61,10 +62,26 @@ func GetDeviceListHandler(c *gin.Context) {
 }
 
 func GetDeviceInfoHandler(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	var deviceInfo orm.DeviceInfo
+	deviceInfo.ID = id
+	db.GetInstance().Find(&deviceInfo)
 
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
-		"data":    gin.H{},
+		"data":    deviceInfo,
+	})
+}
+
+func DeleteDevice(c *gin.Context) {
+	id := c.Param("id")
+
+	var device orm.Device
+	db.GetInstance().Where("id = ?", id).Find(&device).Delete(&device)
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
 	})
 }

@@ -10,7 +10,6 @@ type Device struct {
 	Name           string         `gorm:"column:name"`
 	OrganizationID int            `gorm:"column:organization_id"`
 	Mac            string         `gorm:"column:mac"`
-	Sn             string         `gorm:"column:sn"`
 	PlanID         int            `gorm:"column:plan_id"`
 	State          string         `gorm:"column:state"`
 	CreatedAt      time.Time      `gorm:"column:created_at"`
