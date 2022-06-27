@@ -14,7 +14,7 @@ func AddGroupHandler(c *gin.Context) {
 	t, _ := c.Get(jwtx.IdentityKey)
 	info := t.(*jwtx.TokenUserInfo)
 
-	var group types.Group
+	var group types.AddGroupReq
 	err := c.ShouldBindJSON(&group)
 	if err != nil || strconv.Itoa(group.OrganizationID) != info.OrganizationID {
 		c.JSON(200, gin.H{
@@ -56,10 +56,19 @@ func GetGroupListHandler(c *gin.Context) {
 	t, _ := c.Get(jwtx.IdentityKey)
 	info := t.(*jwtx.TokenUserInfo)
 	list := db.GetAllGroups(info.OrganizationID)
+	gc := db.GetGroupDeviceCnt(info.OrganizationID)
+
+	m := make(map[int]int)
+	for _, v := range gc {
+		m[v.ID] = v.Cnt
+	}
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
-		"data":    list,
+		"data": gin.H{
+			"groups":    list,
+			"deviceCnt": m,
+		},
 	})
 }
 
