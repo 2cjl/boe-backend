@@ -113,3 +113,14 @@ func GetPlanDetail(c *gin.Context) {
 		},
 	})
 }
+
+func DeletePlan(c *gin.Context) {
+	var planId = c.Query("planId")
+	var dbInstance = db.GetInstance()
+	var plan orm.Plan
+	dbInstance.Where("id = ?", planId).Find(&plan).Delete(&plan)
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+	})
+}
