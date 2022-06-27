@@ -3,6 +3,7 @@ package service
 import (
 	"boe-backend/internal/db"
 	"boe-backend/internal/orm"
+	"boe-backend/internal/types"
 	jwtx "boe-backend/internal/util/jwt"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -13,7 +14,7 @@ func AddGroupHandler(c *gin.Context) {
 	t, _ := c.Get(jwtx.IdentityKey)
 	info := t.(*jwtx.TokenUserInfo)
 
-	var group orm.Group
+	var group types.Group
 	err := c.ShouldBindJSON(&group)
 	if err != nil || strconv.Itoa(group.OrganizationID) != info.OrganizationID {
 		c.JSON(200, gin.H{
@@ -23,15 +24,28 @@ func AddGroupHandler(c *gin.Context) {
 		return
 	}
 
-	res := db.GetInstance().Create(&group)
+	var groupOrm orm.Group
+	groupOrm.Name = group.Name
+	groupOrm.OrganizationID = group.OrganizationID
+	groupOrm.Describe = group.Describe
+	res := db.GetInstance().Create(&groupOrm)
 	if res.Error != nil {
 		log.Println(res.Error)
 		c.JSON(200, gin.H{
 			"code":  500,
-			"error": "add group fail",
+			"error": "add groupOrm fail",
 		})
 		return
 	}
+
+	var groupDevice []*orm.GroupDevice
+	for _, id := range group.Devices {
+		groupDevice = append(groupDevice, &orm.GroupDevice{
+			DeviceID: id,
+			GroupID:  groupOrm.ID,
+		})
+	}
+	db.GetInstance().Create(&groupDevice)
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
