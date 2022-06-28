@@ -24,6 +24,7 @@ func RegisterRouter(r *gin.Engine) {
 	userRoute.POST("/login", authMiddleware.LoginHandler)
 	userRoute.POST("/create_account", service.CreateAccount)
 	userRoute.GET("/get_users", service.GetUsers)
+	userRoute.PUT("/ban_user", service.BanUser)
 
 	// === 验证相关路由 ===
 	auth := userRoute.Group("/auth")

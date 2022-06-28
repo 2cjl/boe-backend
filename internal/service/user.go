@@ -3,6 +3,7 @@ package service
 import (
 	"boe-backend/internal/db"
 	"boe-backend/internal/orm"
+	"boe-backend/internal/types"
 	jwtx "boe-backend/internal/util/jwt"
 	"github.com/gin-gonic/gin"
 	"strconv"
@@ -83,5 +84,30 @@ func GetUsers(c *gin.Context) {
 		"message": "success",
 		"total":   total,
 		"users":   users,
+	})
+}
+
+func BanUser(c *gin.Context) {
+	var req types.BanUserRequest
+	err := c.BindJSON(&req)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"error": "request param error",
+		})
+		return
+	}
+	var user = GetUserById(req.UserId)
+	if user.ID == 0 {
+		c.JSON(400, gin.H{
+			"error": "user not existed",
+		})
+		return
+	}
+	user.Status = "停用"
+	var dbInstance = db.GetInstance()
+	dbInstance.Save(&user)
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
 	})
 }
