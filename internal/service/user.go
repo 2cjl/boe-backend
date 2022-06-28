@@ -19,7 +19,15 @@ func CreateAccount(c *gin.Context) {
 	var probablySameUser = GetUserByUserName(registerForm.Username)
 	if probablySameUser.ID != 0 {
 		c.JSON(400, gin.H{
-			"error": "该用户名已存在",
+			"error": "The username already exists",
+		})
+		return
+	}
+
+	organization := db.GetOrganizationById(registerForm.Organization)
+	if organization == nil {
+		c.JSON(400, gin.H{
+			"error": "nonexistent organization",
 		})
 		return
 	}
@@ -65,7 +73,7 @@ func GetUsers(c *gin.Context) {
 	var users []orm.User
 
 	var dbInstance = db.GetInstance()
-	dbInstance.Limit(count).Offset(offset).Find(&users)
+	dbInstance.Limit(count).Offset(offset).Preload("Organization").Find(&users)
 
 	var total int64
 	dbInstance.Model(&orm.User{}).Count(&total)

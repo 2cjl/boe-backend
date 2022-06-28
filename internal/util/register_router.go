@@ -23,7 +23,7 @@ func RegisterRouter(r *gin.Engine) {
 	userRoute := r.Group("/user")
 	userRoute.POST("/login", authMiddleware.LoginHandler)
 	userRoute.POST("/create_account", service.CreateAccount)
-	userRoute.POST("/get_users", service.GetUsers)
+	userRoute.GET("/get_users", service.GetUsers)
 
 	// === 验证相关路由 ===
 	auth := userRoute.Group("/auth")

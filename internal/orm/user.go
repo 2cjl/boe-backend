@@ -18,5 +18,5 @@ type User struct {
 	CreatedAt      time.Time      `gorm:"column:created_at"`
 	UpdatedAt      time.Time      `gorm:"column:updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at"`
-	Organization   Organization
+	Organization   Organization   `gorm:"foreignKey:OrganizationID;references:ID"`
 }
