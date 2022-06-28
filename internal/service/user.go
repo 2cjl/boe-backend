@@ -111,3 +111,27 @@ func BanUser(c *gin.Context) {
 		"message": "success",
 	})
 }
+
+func DeleteUser(c *gin.Context) {
+	var req types.DeleteUserRequest
+	err := c.BindJSON(&req)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"error": "request param error",
+		})
+		return
+	}
+	var user = GetUserById(req.UserId)
+	if user.ID == 0 {
+		c.JSON(400, gin.H{
+			"error": "user not existed",
+		})
+		return
+	}
+	var dbInstance = db.GetInstance()
+	dbInstance.Delete(&user)
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+	})
+}
