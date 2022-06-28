@@ -139,6 +139,13 @@ func GetGroupDeviceCntByGroup(groupIdList []orm.Group) []GroupCnt {
 	return c
 }
 
+func GetPlanByIds(ids []int) []orm.Plan {
+	getInstance()
+	var plans []orm.Plan
+	db.Find(&plans, ids)
+	return plans
+}
+
 func GetDevicesByGroupDevice(groupDevices []orm.GroupDevice) []orm.Device {
 	if groupDevices == nil || len(groupDevices) == 0 {
 		return []orm.Device{}

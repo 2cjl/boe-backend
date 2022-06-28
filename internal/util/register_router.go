@@ -51,6 +51,7 @@ func RegisterRouter(r *gin.Engine) {
 	deviceRoute.GET("/all", service.GetDeviceListHandler)
 	deviceRoute.GET("/info/:id", service.GetDeviceInfoHandler)
 	deviceRoute.DELETE("/:id", service.DeleteDevice)
+	deviceRoute.PUT("", service.UpdateDevice)
 
 	// === 分组相关路由 ===
 	groupRoute := r.Group("/group")
@@ -81,4 +82,10 @@ func RegisterRouter(r *gin.Engine) {
 	showRoute.DELETE("/:id", service.DeleteShow)
 	showRoute.POST("", service.AddShowHandler)
 	showRoute.PUT("", service.UpdateShow)
+
+	// === 组织相关路由 ===
+	orgRoute := r.Group("/organization")
+	orgRoute.Use(authMiddleware.MiddlewareFunc())
+	orgRoute.GET("", service.GetSelfOrgHandler)
+
 }

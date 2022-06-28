@@ -41,6 +41,30 @@ func AddDeviceHandler(c *gin.Context) {
 	})
 }
 
+func UpdateDevice(c *gin.Context) {
+	var req types.AddDeviceReq
+	err := c.ShouldBindJSON(&req)
+	if err != nil || req.ID == 0 {
+		log.Println(err)
+		c.JSON(200, gin.H{
+			"code":  400,
+			"error": "Bad request parameter",
+		})
+		return
+	}
+	var device orm.Device
+	device.ID = req.ID
+	device.Name = req.Name
+	device.Mac = req.Mac
+	db.GetInstance().Updates(&device)
+
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+		"data":    device,
+	})
+}
+
 func GetDeviceListHandler(c *gin.Context) {
 	var offset, _ = strconv.Atoi(c.Query("offset"))
 	var count, _ = strconv.Atoi(c.Query("count"))
@@ -51,12 +75,23 @@ func GetDeviceListHandler(c *gin.Context) {
 	var total int64
 	dbInstance.Table("devices").Count(&total)
 
+	names := make(map[int]string)
+	var ids []int
+	for _, v := range devices {
+		ids = append(ids, v.PlanID)
+	}
+	plans := db.GetPlanByIds(ids)
+	for _, plan := range plans {
+		names[plan.ID] = plan.Name
+	}
+
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
 		"data": gin.H{
-			"total":   total,
-			"devices": devices,
+			"total":     total,
+			"devices":   devices,
+			"plansName": names,
 		},
 	})
 }
