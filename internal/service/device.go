@@ -65,8 +65,15 @@ func GetDeviceInfoHandler(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 
 	var deviceInfo orm.DeviceInfo
+	var device orm.Device
 	deviceInfo.ID = id
 	db.GetInstance().Find(&deviceInfo)
+	device.ID = deviceInfo.ID
+	db.GetInstance().Find(&device)
+	if d := devicemanager.GetDeviceByMac(device.Mac); d != nil {
+		deviceInfo.LastHeartbeat = d.LastHeartbeat
+		deviceInfo.RunningTime = d.RunningTime
+	}
 
 	c.JSON(200, gin.H{
 		"code":    200,

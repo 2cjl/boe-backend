@@ -41,6 +41,13 @@ var (
 	deviceLock sync.Mutex
 )
 
+func GetDeviceByMac(mac string) *Device {
+	deviceLock.Lock()
+	d := devices[mac]
+	deviceLock.Unlock()
+	return d
+}
+
 type Device struct {
 	ID             int
 	DeviceName     string
