@@ -26,6 +26,7 @@ func RegisterRouter(r *gin.Engine) {
 	userRoute.GET("/get_users", service.GetUsers)
 	userRoute.PUT("/ban_user", service.BanUser)
 	userRoute.DELETE("/delete_user", service.DeleteUser)
+	userRoute.PUT("/update_account", service.UpdateAccount)
 
 	// === 验证相关路由 ===
 	auth := userRoute.Group("/auth")

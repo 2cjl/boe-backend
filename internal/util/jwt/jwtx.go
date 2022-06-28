@@ -26,23 +26,6 @@ type loginForm struct {
 	Passwd string `form:"passwd" json:"passwd" binding:"required"`
 }
 
-type CreateAccountForm struct {
-	// 账户名
-	Username string `form:"username" json:"username" binding:"required"`
-	// 密码
-	Passwd string `form:"passwd" json:"passwd" binding:"required"`
-	// 所属机构
-	Organization int `form:"organization" json:"organization" binding:"required"`
-	// 账号状态
-	Status string `form:"status" json:"status" binding:"required"`
-	// 真实姓名
-	RealName string `form:"realName" json:"realName" binding:"required"`
-	// 邮箱
-	Email string `form:"email" json:"email" binding:"required"`
-	// 手机号
-	Phone string `form:"phone" json:"phone" binding:"required"`
-}
-
 // TokenUserInfo 结构体中的数据将会编码进token
 type TokenUserInfo struct {
 	ID             string

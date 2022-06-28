@@ -4,13 +4,12 @@ import (
 	"boe-backend/internal/db"
 	"boe-backend/internal/orm"
 	"boe-backend/internal/types"
-	jwtx "boe-backend/internal/util/jwt"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
 
 func CreateAccount(c *gin.Context) {
-	var registerForm jwtx.CreateAccountForm
+	var registerForm types.CreateAccountForm
 	if err := c.ShouldBind(&registerForm); err != nil {
 		c.JSON(400, gin.H{
 			"error": "Bad request parameter",
@@ -130,6 +129,62 @@ func DeleteUser(c *gin.Context) {
 	}
 	var dbInstance = db.GetInstance()
 	dbInstance.Delete(&user)
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+	})
+}
+
+func UpdateAccount(c *gin.Context) {
+	var updateAccountFormData types.UpdateAccountForm
+	if err := c.ShouldBind(&updateAccountFormData); err != nil {
+		c.JSON(400, gin.H{
+			"error": "Bad request parameter",
+		})
+		return
+	}
+
+	if updateAccountFormData.Organization != 0 {
+		organization := db.GetOrganizationById(updateAccountFormData.Organization)
+		if organization == nil {
+			c.JSON(400, gin.H{
+				"error": "nonexistent organization",
+			})
+			return
+		}
+	}
+
+	// 获取待编辑的用户
+	var user = GetUserById(updateAccountFormData.UserId)
+	if user.ID == 0 {
+		c.JSON(400, gin.H{
+			"error": "user not existed",
+		})
+		return
+	}
+
+	// 当用户名被修改时，去校验
+	if user.Username != updateAccountFormData.Username {
+		var probablySameUser = GetUserByUserName(updateAccountFormData.Username)
+		if probablySameUser.ID != 0 {
+			c.JSON(400, gin.H{
+				"error": "The username already exists",
+			})
+			return
+		}
+	}
+
+	// 开始执行更新操作 (只会更新非 0 字段)
+	user.Username = updateAccountFormData.Username
+	user.Passwd = updateAccountFormData.Passwd
+	user.OrganizationID = updateAccountFormData.Organization
+	user.Email = updateAccountFormData.Email
+	user.Phone = updateAccountFormData.Phone
+	user.RealName = updateAccountFormData.RealName
+	user.Status = updateAccountFormData.Status
+	var dbInstance = db.GetInstance()
+	dbInstance.Updates(&user)
+
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
