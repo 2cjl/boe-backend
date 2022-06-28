@@ -5,6 +5,7 @@ import (
 	"boe-backend/internal/orm"
 	jwtx "boe-backend/internal/util/jwt"
 	"github.com/gin-gonic/gin"
+	"strconv"
 )
 
 func CreateAccount(c *gin.Context) {
@@ -55,4 +56,24 @@ func GetUserById(id string) orm.User {
 	var user orm.User
 	ins.First(&user, id)
 	return user
+}
+
+// GetUsers 获取所有用户（分页）
+func GetUsers(c *gin.Context) {
+	var offset, _ = strconv.Atoi(c.Query("offset"))
+	var count, _ = strconv.Atoi(c.Query("count"))
+	var users []orm.User
+
+	var dbInstance = db.GetInstance()
+	dbInstance.Limit(count).Offset(offset).Find(&users)
+
+	var total int64
+	dbInstance.Model(&orm.User{}).Count(&total)
+
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+		"total":   total,
+		"users":   users,
+	})
 }
