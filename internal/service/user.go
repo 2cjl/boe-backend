@@ -7,46 +7,49 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterHandler(c *gin.Context) {
-	var registerForm jwtx.RegisterForm
+func CreateAccount(c *gin.Context) {
+	var registerForm jwtx.CreateAccountForm
 	if err := c.ShouldBind(&registerForm); err != nil {
 		c.JSON(400, gin.H{
 			"error": "Bad request parameter",
 		})
 		return
 	}
+	var probablySameUser = GetUserByUserName(registerForm.Username)
+	if probablySameUser.ID != 0 {
+		c.JSON(400, gin.H{
+			"error": "该用户名已存在",
+		})
+		return
+	}
 
-	//isExist, err := db.IsExistPhone(registerForm.Phone)
-	//if err != nil {
-	//	log.Println(err)
-	//	c.JSON(500, gin.H{
-	//		"error": "Server internal error",
-	//	})
-	//	return
-	//}
-	//if isExist {
-	//	c.JSON(400, gin.H{
-	//		"error": "phone already exists",
-	//	})
-	//	return
-	//}
-	//
-	//id, err := db.Register(registerForm.Username, registerForm.Phone, registerForm.Passwd, registerForm.IdNumber, registerForm.WorkStatus, registerForm.Age)
-	//if err != nil {
-	//	log.Println(err)
-	//	c.JSON(500, gin.H{
-	//		"error": "Server internal error",
-	//	})
-	//	return
-	//}
-
-	//fmt.Printf("id (%v, %T)\n", id, id)
+	var user orm.User
+	user.Username = registerForm.Username
+	user.Passwd = registerForm.Passwd
+	user.OrganizationID = registerForm.Organization
+	user.Email = registerForm.Email
+	user.Phone = registerForm.Phone
+	user.RealName = registerForm.RealName
+	user.Status = registerForm.Status
+	var dbInstance = db.GetInstance()
+	dbInstance.Save(&user)
 
 	c.JSON(200, gin.H{
-		//"token": jwtx.GenerateToken(id),
+		"code":    200,
+		"message": "success",
 	})
 }
 
+// GetUserByUserName 根据用户名获取用户
+func GetUserByUserName(name string) orm.User {
+	var ins = db.GetInstance()
+	var user orm.User
+	ins.First(&user, "username = ?", name)
+
+	return user
+}
+
+// GetUserById 根据用户 ID 获取用户
 func GetUserById(id string) orm.User {
 	var ins = db.GetInstance()
 	var user orm.User
