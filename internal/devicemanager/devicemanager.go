@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
+	"github.com/patrickmn/go-cache"
 	"gorm.io/gorm/clause"
 	"log"
 	"strconv"
@@ -28,17 +29,19 @@ const (
 	typePlanList   = "planList"
 	typeDeletePlan = "deletePlan"
 	typeHi         = "hi"
+	typeBrightness = "brightness"
+	typeScreenshot = "screenshot"
 
 	writeTimeout = time.Second * 8
-	readTimeout  = time.Second * 8
 
 	DeviceOffline = "OFFLINE"
 	DeviceOnline  = "ONLINE"
 )
 
 var (
-	devices    = make(map[string]*Device)
-	deviceLock sync.Mutex
+	devices     = make(map[string]*Device)
+	Screenshots = cache.New(time.Minute, 2*time.Minute)
+	deviceLock  sync.Mutex
 )
 
 func GetDeviceByMac(mac string) *Device {
@@ -183,6 +186,8 @@ func (d *Device) Receive() {
 			}).Create(&info)
 
 			continue
+		case typeScreenshot:
+			Screenshots.Set(d.Mac, m["data"].(string), time.Minute)
 		default:
 			log.Printf("unknown type:%s\n", m["type"].(string))
 			continue
@@ -193,6 +198,19 @@ func (d *Device) Receive() {
 			return
 		}
 	}
+}
+
+func (d *Device) ChangeBrightness(data float64) error {
+	m := make(map[string]interface{})
+	m["type"] = typeBrightness
+	m["data"] = data
+	return d.writeMsg(m)
+}
+
+func (d *Device) CtlScreenshot() error {
+	m := make(map[string]interface{})
+	m["type"] = typeScreenshot
+	return d.writeMsg(m)
 }
 
 func (d *Device) SyncPlan() error {

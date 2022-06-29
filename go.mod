@@ -9,6 +9,7 @@ require (
 	github.com/gorilla/websocket v1.4.0
 	github.com/minio/minio-go/v7 v7.0.29
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/spf13/viper v1.12.0
 	github.com/tidwall/gjson v1.12.1
 	gorm.io/driver/mysql v1.3.4
