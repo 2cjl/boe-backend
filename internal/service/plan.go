@@ -94,7 +94,7 @@ func GetPlanList(c *gin.Context) {
 	dbInstance.Limit(count).Offset(offset).Find(&plans)
 
 	var total int64
-	dbInstance.Model(&orm.Plan{}).Count(&total)
+	dbInstance.Model(&orm.Plan{}).Where("deleted_at IS NULL").Count(&total)
 
 	c.JSON(200, gin.H{
 		"code":    200,
