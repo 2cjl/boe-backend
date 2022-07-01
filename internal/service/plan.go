@@ -86,6 +86,11 @@ func GetPlan(c *gin.Context) {
 	})
 }
 
+type planDTO struct {
+	orm.Plan
+	Preview string
+}
+
 // GetPlanList 获取计划列表
 func GetPlanList(c *gin.Context) {
 	var offset, _ = strconv.Atoi(c.Query("offset"))
@@ -94,6 +99,10 @@ func GetPlanList(c *gin.Context) {
 	var plans []orm.Plan
 	dbInstance.Limit(count).Offset(offset).Find(&plans)
 
+	dtos := make([]planDTO, len(plans))
+	for i := 0; i < len(plans); i++ {
+		dtos[i].Plan = plans[i]
+	}
 	var total int64
 	dbInstance.Model(&orm.Plan{}).Where("deleted_at IS NULL").Count(&total)
 
@@ -118,13 +127,16 @@ func GetPlanList(c *gin.Context) {
 		}
 	}
 
+	for i := 0; i < len(dtos); i++ {
+		dtos[i].Preview = previews[dtos[i].ID]
+	}
+
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
 		"data": gin.H{
-			"total":    total,
-			"plans":    plans,
-			"previews": previews,
+			"total": total,
+			"plans": dtos,
 		},
 	})
 }
