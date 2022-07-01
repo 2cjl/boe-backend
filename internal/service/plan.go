@@ -5,6 +5,7 @@ import (
 	"boe-backend/internal/orm"
 	"boe-backend/internal/types"
 	jwtx "boe-backend/internal/util/jwt"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"log"
 	"strconv"
@@ -96,12 +97,34 @@ func GetPlanList(c *gin.Context) {
 	var total int64
 	dbInstance.Model(&orm.Plan{}).Where("deleted_at IS NULL").Count(&total)
 
+	var ids []interface{}
+	for _, v := range plans {
+		ids = append(ids, v.ID)
+	}
+
+	imagesMap := db.GetPlanFirstImagesByIds(ids)
+	previews := make(map[int]string)
+	for planId, images := range imagesMap {
+		if _, ok := previews[planId]; ok {
+			continue
+		}
+		var m []string
+		err := json.Unmarshal([]byte(images), &m)
+		if err != nil {
+			continue
+		}
+		if len(m) > 0 {
+			previews[planId] = m[0]
+		}
+	}
+
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
 		"data": gin.H{
-			"total": total,
-			"plans": plans,
+			"total":    total,
+			"plans":    plans,
+			"previews": previews,
 		},
 	})
 }
