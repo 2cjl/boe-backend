@@ -173,3 +173,26 @@ func GetDeviceByState(organizationId string, state string) []orm.Device {
 	db.Find(&devices, "organization_id = ? AND state = ?", organizationId, state)
 	return devices
 }
+
+func GetPlanFirstImagesByIds(ids []interface{}) (res map[int]string) {
+	res = make(map[int]string)
+	if len(ids) == 0 {
+		return
+	}
+	getInstance()
+	rows, err := db.Raw("SELECT p.id, s.images FROM `play_period` d, `plan` p, `play_period_show` ds, `show` s WHERE d.plan_id = p.id AND d.id = ds.play_period_id AND ds.show_id = s.id AND p.id IN (?"+strings.Repeat(",?", len(ids)-1)+")", ids...).Rows()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	for rows.Next() {
+		var id int
+		var images string
+		err := rows.Scan(&id, &images)
+		if err != nil {
+			return
+		}
+		res[id] = images
+	}
+	return
+}

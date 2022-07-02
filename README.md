@@ -143,3 +143,35 @@ file
 }
 ```
 
+#### 控制
+
+##### 截图
+
+**backend->device**
+
+```json
+{
+    "type":"screenshot"
+}
+```
+
+**device->backend**
+
+```json
+{
+    "type":"screenshot",
+    "data":"image in base64 format"
+}
+```
+
+##### 亮度
+
+**backend->device**
+
+```json
+{
+    "type":"brightness"
+    "data": 0.8
+}
+```
+

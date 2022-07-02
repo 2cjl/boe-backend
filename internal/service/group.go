@@ -64,7 +64,7 @@ func GetGroupListHandler(c *gin.Context) {
 	gc := db.GetGroupDeviceCntByGroup(groups)
 
 	var total int64
-	db.GetInstance().Table("groups").Count(&total)
+	db.GetInstance().Table("groups").Where("deleted_at IS NULL").Count(&total)
 
 	m := make(map[int]int)
 	for _, v := range gc {

@@ -76,7 +76,7 @@ func GetUsers(c *gin.Context) {
 	dbInstance.Limit(count).Offset(offset).Preload("Organization").Find(&users)
 
 	var total int64
-	dbInstance.Model(&orm.User{}).Count(&total)
+	dbInstance.Model(&orm.User{}).Where("deleted_at IS NULL").Count(&total)
 
 	c.JSON(200, gin.H{
 		"code":    200,

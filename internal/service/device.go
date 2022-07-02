@@ -73,7 +73,7 @@ func GetDeviceListHandler(c *gin.Context) {
 	dbInstance.Limit(count).Offset(offset).Find(&devices)
 
 	var total int64
-	dbInstance.Table("devices").Count(&total)
+	dbInstance.Table("devices").Where("deleted_at IS NULL").Count(&total)
 
 	names := make(map[int]string)
 	var ids []int

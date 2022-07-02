@@ -5,6 +5,7 @@ import (
 	"boe-backend/internal/orm"
 	"boe-backend/internal/types"
 	jwtx "boe-backend/internal/util/jwt"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"log"
 	"strconv"
@@ -85,6 +86,11 @@ func GetPlan(c *gin.Context) {
 	})
 }
 
+type planDTO struct {
+	orm.Plan
+	Preview string
+}
+
 // GetPlanList 获取计划列表
 func GetPlanList(c *gin.Context) {
 	var offset, _ = strconv.Atoi(c.Query("offset"))
@@ -93,15 +99,44 @@ func GetPlanList(c *gin.Context) {
 	var plans []orm.Plan
 	dbInstance.Limit(count).Offset(offset).Preload("Author").Find(&plans)
 
+	dtos := make([]planDTO, len(plans))
+	for i := 0; i < len(plans); i++ {
+		dtos[i].Plan = plans[i]
+	}
 	var total int64
-	dbInstance.Model(&orm.Plan{}).Count(&total)
+	dbInstance.Model(&orm.Plan{}).Where("deleted_at IS NULL").Count(&total)
+
+	var ids []interface{}
+	for _, v := range plans {
+		ids = append(ids, v.ID)
+	}
+
+	imagesMap := db.GetPlanFirstImagesByIds(ids)
+	previews := make(map[int]string)
+	for planId, images := range imagesMap {
+		if _, ok := previews[planId]; ok {
+			continue
+		}
+		var m []string
+		err := json.Unmarshal([]byte(images), &m)
+		if err != nil {
+			continue
+		}
+		if len(m) > 0 {
+			previews[planId] = m[0]
+		}
+	}
+
+	for i := 0; i < len(dtos); i++ {
+		dtos[i].Preview = previews[dtos[i].ID]
+	}
 
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
 		"data": gin.H{
 			"total": total,
-			"plans": plans,
+			"plans": dtos,
 		},
 	})
 }

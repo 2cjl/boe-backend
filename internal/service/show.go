@@ -16,7 +16,7 @@ func GetShowListHandler(c *gin.Context) {
 	dbInstance.Limit(count).Offset(offset).Find(&shows)
 
 	var total int64
-	dbInstance.Table("show").Count(&total)
+	dbInstance.Table("show").Where("deleted_at IS NULL").Count(&total)
 	previews := make(map[int]string)
 	for _, show := range shows {
 		var m []string

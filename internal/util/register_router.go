@@ -53,6 +53,9 @@ func RegisterRouter(r *gin.Engine) {
 	deviceRoute.GET("/info/:id", service.GetDeviceInfoHandler)
 	deviceRoute.DELETE("/:id", service.DeleteDevice)
 	deviceRoute.PUT("", service.UpdateDevice)
+	deviceRoute.POST("/:id/screenshot", service.CtlScreenshotHandler)
+	deviceRoute.GET("/:id/screenshot", service.GetScreenshotHandler)
+	deviceRoute.PUT("/:id/brightness", service.ChangeBrightnessHandler)
 
 	// === 分组相关路由 ===
 	groupRoute := r.Group("/group")
