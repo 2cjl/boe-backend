@@ -176,3 +176,33 @@ func DeletePlan(c *gin.Context) {
 		"message": "success",
 	})
 }
+
+// CopyPlan 复制一个计划
+func CopyPlan(c *gin.Context) {
+	t, _ := c.Get(jwtx.IdentityKey)
+	var user = t.(*jwtx.TokenUserInfo)
+
+	var planId = c.Query("planId")
+	var dbInstance = db.GetInstance()
+	var plan orm.Plan
+	// 首先获取原计划
+	dbInstance.Where("id = ?", planId).Find(&plan)
+	if plan.ID == 0 {
+		c.JSON(400, gin.H{
+			"error": "plan not exist!",
+		})
+		return
+	}
+	var newPlan orm.Plan
+	newPlan.UserID, _ = strconv.Atoi(user.ID)
+	newPlan.ID = plan.ID
+	newPlan.Name = plan.Name
+	newPlan.Mode = plan.Mode
+	newPlan.State = "未发布"
+	newPlan.PlayPeriods = plan.PlayPeriods
+	dbInstance.Create(&newPlan)
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+	})
+}
