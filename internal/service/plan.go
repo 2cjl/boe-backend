@@ -2,6 +2,7 @@ package service
 
 import (
 	"boe-backend/internal/db"
+	"boe-backend/internal/devicemanager"
 	"boe-backend/internal/orm"
 	"boe-backend/internal/types"
 	jwtx "boe-backend/internal/util/jwt"
@@ -196,6 +197,46 @@ func CopyPlan(c *gin.Context) {
 	newPlan.State = "未发布"
 
 	dbInstance.Create(&newPlan)
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+	})
+}
+
+func PublishPlan(c *gin.Context) {
+	var planId = c.Query("planId")
+	var dbInstance = db.GetInstance()
+	var plan orm.Plan
+	dbInstance.Where("id = ?", planId).Find(&plan)
+	if plan.ID == 0 {
+		c.JSON(400, gin.H{
+			"error": "plan not exist!",
+		})
+		return
+	}
+	devices := db.GetDevicesByPlanId(plan.ID)
+
+	for _, d := range devices {
+		onlineDevice := devicemanager.GetDeviceByMac(d.Mac)
+		if onlineDevice == nil {
+			c.JSON(200, gin.H{
+				"code":    400,
+				"message": "device is offline",
+			})
+			return
+		}
+		err := onlineDevice.SyncPlan([]*orm.Plan{&plan})
+		if err != nil {
+			c.JSON(200, gin.H{
+				"code":    500,
+				"message": "failed to publish",
+			})
+			db.GetInstance().Table("plan").Where("id = ", plan.ID).Updates(map[string]interface{}{"state": devicemanager.PublishFail})
+			return
+		}
+	}
+
+	db.GetInstance().Table("plan").Where("id = ", plan.ID).Updates(map[string]interface{}{"state": devicemanager.PublishSuccess})
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",

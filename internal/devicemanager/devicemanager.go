@@ -35,6 +35,10 @@ const (
 
 	DeviceOffline = "OFFLINE"
 	DeviceOnline  = "ONLINE"
+
+	PublishSuccess = "已发布"
+	PublishFail    = "发布失败"
+	Unpublished    = "未发布"
 )
 
 var (
@@ -94,12 +98,19 @@ func (d *Device) InitInfo() {
 
 	var plans []*orm.Plan
 	ins := db.GetInstance()
-	ins.Where("id in (?)", ins.Table("plan_device").Select("plan_id").Where("device_id = ?", d.ID)).Where("state = 未发布").Find(&plans)
+	ins.Where("id in (?)", ins.Table("plan_device").Select("plan_id").Where("device_id = ?", d.ID)).Where("state = ? OR state = ?", PublishFail, PublishSuccess).Find(&plans)
 	log.Println(plans)
 	err = d.SyncPlan(plans)
+	var ids []int
+	for _, p := range plans {
+		ids = append(ids, p.ID)
+	}
 	if err != nil {
 		log.Println(err)
+		ins.Table("plan").Where("id IN ?", ids).Updates(map[string]interface{}{"state": PublishFail})
+		return
 	}
+	ins.Table("plan").Where("id IN ?", ids).Updates(map[string]interface{}{"state": PublishSuccess})
 }
 
 func (d *Device) Receive() {
