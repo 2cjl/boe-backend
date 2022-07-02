@@ -96,11 +96,11 @@ func GetPlanList(c *gin.Context) {
 	var offset, _ = strconv.Atoi(c.Query("offset"))
 	var count, _ = strconv.Atoi(c.Query("count"))
 	var name = c.Query("name")
-	var status = c.Query("status")
+	var state = c.Query("state")
 
 	var dbInstance = db.GetInstance()
 	var plans []orm.Plan
-	dbInstance.Limit(count).Offset(offset).Where("name LIKE ?", "%"+name+"%").Where("status LIKE ?", "%"+status+"%").Preload("Author").Find(&plans)
+	dbInstance.Limit(count).Offset(offset).Where("name LIKE ?", "%"+name+"%").Where("state LIKE ?", "%"+state+"%").Preload("Author").Find(&plans)
 
 	dtos := make([]planDTO, len(plans))
 	for i := 0; i < len(plans); i++ {
