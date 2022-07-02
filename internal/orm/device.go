@@ -25,7 +25,7 @@ type DeviceInfo struct {
 	Latitude      float64        `gorm:"column:latitude"`
 	Longitude     float64        `gorm:"column:longitude"`
 	LastHeartbeat time.Time      `gorm:"column:last_heartbeat"`
-	RunningTime   int            `gorm:"column:running_time"`
+	RunningTime   uint64         `gorm:"column:running_time"`
 	Resolution    string         `gorm:"column:resolution"`
 	AppVersion    string         `gorm:"column:app_version"`
 	Memory        string         `gorm:"column:memory"`
