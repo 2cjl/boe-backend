@@ -58,9 +58,10 @@ func GetGroupListHandler(c *gin.Context) {
 	info := t.(*jwtx.TokenUserInfo)
 	var offset, _ = strconv.Atoi(c.Query("offset"))
 	var count, _ = strconv.Atoi(c.Query("count"))
+	var name = c.Query("name")
 
 	var groups []orm.Group
-	db.GetInstance().Limit(count).Offset(offset).Find(&groups, "organization_id = ?", info.OrganizationID)
+	db.GetInstance().Limit(count).Offset(offset).Where("name LIKE ?", "%"+name+"%").Find(&groups, "organization_id = ?", info.OrganizationID)
 	gc := db.GetGroupDeviceCntByGroup(groups)
 
 	m := make(map[int]int)
@@ -76,7 +77,7 @@ func GetGroupListHandler(c *gin.Context) {
 	}
 
 	var total int64
-	db.GetInstance().Table("groups").Where("deleted_at IS NULL AND organization_id = ?", info.OrganizationID).Count(&total)
+	db.GetInstance().Table("groups").Where("name LIKE ?", "%"+name+"%").Where("deleted_at IS NULL AND organization_id = ?", info.OrganizationID).Count(&total)
 
 	c.JSON(200, gin.H{
 		"code":    200,
