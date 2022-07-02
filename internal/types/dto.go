@@ -15,3 +15,8 @@ type DeviceDTO struct {
 	PlanName   string
 	State      string
 }
+
+type ShowDTO struct {
+	orm.Show
+	Preview string
+}

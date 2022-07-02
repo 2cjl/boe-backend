@@ -3,6 +3,7 @@ package service
 import (
 	"boe-backend/internal/db"
 	"boe-backend/internal/orm"
+	"boe-backend/internal/types"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"strconv"
@@ -17,24 +18,26 @@ func GetShowListHandler(c *gin.Context) {
 
 	var total int64
 	dbInstance.Table("show").Where("deleted_at IS NULL").Count(&total)
-	previews := make(map[int]string)
-	for _, show := range shows {
+	showDTOs := make([]types.ShowDTO, len(shows))
+	for i := 0; i < len(shows); i++ {
+		showDTOs[i].Show = shows[i]
+
 		var m []string
-		err := json.Unmarshal([]byte(show.Images), &m)
+		err := json.Unmarshal([]byte(shows[i].Images), &m)
 		if err != nil {
 			continue
 		}
 		if len(m) > 0 {
-			previews[show.ID] = m[0]
+			showDTOs[i].Preview = m[0]
 		}
 	}
+
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
 		"data": gin.H{
-			"total":    total,
-			"shows":    shows,
-			"previews": previews,
+			"total": total,
+			"shows": showDTOs,
 		},
 	})
 }

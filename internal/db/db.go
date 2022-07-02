@@ -143,6 +143,9 @@ func GetGroupDeviceCntByGroup(groupIdList []orm.Group) []GroupCnt {
 func GetPlanByIds(ids []int) []orm.Plan {
 	getInstance()
 	var plans []orm.Plan
+	if len(ids) == 0 {
+		ids = []int{0}
+	}
 	db.Find(&plans, ids)
 	return plans
 }
@@ -176,6 +179,25 @@ func GetDevicesByPlanId(planID int) (res []types.DeviceDTO) {
 			return
 		}
 		res = append(res, d)
+	}
+	return
+}
+
+func GetAllResolutions() (res []string) {
+	getInstance()
+	rows, err := db.Raw("SELECT resolution FROM `show` GROUP BY resolution").Rows()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	for rows.Next() {
+		var str string
+		err := rows.Scan(&str)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		res = append(res, str)
 	}
 	return
 }

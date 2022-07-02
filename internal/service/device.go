@@ -66,11 +66,19 @@ func UpdateDevice(c *gin.Context) {
 }
 
 func GetDeviceListHandler(c *gin.Context) {
-	var offset, _ = strconv.Atoi(c.Query("offset"))
-	var count, _ = strconv.Atoi(c.Query("count"))
+	offset, _ := strconv.Atoi(c.Query("offset"))
+	count, _ := strconv.Atoi(c.Query("count"))
+	name := c.Query("name")
+	groupID, _ := strconv.Atoi(c.Query("group"))
+
 	var dbInstance = db.GetInstance()
 	var devices []orm.Device
-	dbInstance.Limit(count).Offset(offset).Find(&devices)
+	if groupID != 0 {
+		subQ := dbInstance.Table("group_device").Select("device_id").Where("group_id = ?", groupID)
+		dbInstance.Limit(count).Offset(offset).Where("name LIKE ?", "%"+name+"%").Where("id IN (?)", subQ).Find(&devices)
+	} else {
+		dbInstance.Limit(count).Offset(offset).Where("name LIKE ?", "%"+name+"%").Find(&devices)
+	}
 
 	var total int64
 	dbInstance.Table("devices").Where("deleted_at IS NULL").Count(&total)
@@ -92,6 +100,17 @@ func GetDeviceListHandler(c *gin.Context) {
 			"total":     total,
 			"devices":   devices,
 			"plansName": names,
+		},
+	})
+}
+
+func GetResolutionsHandler(c *gin.Context) {
+	resolutions := db.GetAllResolutions()
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+		"data": gin.H{
+			"resolutions": resolutions,
 		},
 	})
 }
