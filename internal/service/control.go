@@ -33,6 +33,7 @@ func CtlScreenshotHandler(c *gin.Context) {
 			"code":    200,
 			"message": "success",
 		})
+		return
 	}
 	c.JSON(200, gin.H{
 		"code":    404,
