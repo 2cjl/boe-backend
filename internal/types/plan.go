@@ -19,4 +19,6 @@ type CreatePlanRequest struct {
 	EndDate string
 	// 该计划对应的时间段
 	PlayPeriods []PlayPeriod
+	// 设备 ID 列表
+	DeviceIds []int
 }

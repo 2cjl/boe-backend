@@ -8,7 +8,6 @@ import (
 	jwtx "boe-backend/internal/util/jwt"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"log"
 	"strconv"
 )
 
@@ -21,7 +20,9 @@ func CreatePlan(c *gin.Context) {
 
 	err := c.BindJSON(&req)
 	if err != nil {
-		log.Print(err)
+		c.JSON(400, gin.H{
+			"error": "request param error",
+		})
 		return
 	}
 
@@ -54,6 +55,7 @@ func CreatePlan(c *gin.Context) {
 	}
 
 	plan.PlayPeriods = playPeriods
+	ins.Find(&plan.Devices, req.DeviceIds)
 
 	var dbInstance = db.GetInstance()
 	// 保存计划实体
