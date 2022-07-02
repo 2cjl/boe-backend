@@ -47,6 +47,7 @@ func GetScreenshotHandler(c *gin.Context) {
 	db.GetInstance().Find(&device)
 
 	if data, ok := devicemanager.Screenshots.Get(device.Mac); ok {
+		devicemanager.Screenshots.Delete(device.Mac)
 		c.JSON(200, gin.H{
 			"code":    200,
 			"message": "success",
@@ -72,6 +73,8 @@ func ChangeBrightnessHandler(c *gin.Context) {
 		})
 		return
 	}
+
+	log.Println(req.data)
 
 	var device orm.Device
 	device.ID = id
