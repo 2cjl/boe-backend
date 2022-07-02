@@ -15,7 +15,11 @@ import (
 var (
 	port          int
 	websocketPort int
-	upgrader      = websocket.Upgrader{}
+	upgrader      = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
 )
 
 func init() {
