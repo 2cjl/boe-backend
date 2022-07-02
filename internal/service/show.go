@@ -12,12 +12,14 @@ import (
 func GetShowListHandler(c *gin.Context) {
 	var offset, _ = strconv.Atoi(c.Query("offset"))
 	var count, _ = strconv.Atoi(c.Query("count"))
+	var name = c.Query("name")
+
 	var dbInstance = db.GetInstance()
 	var shows []orm.Show
-	dbInstance.Limit(count).Offset(offset).Find(&shows)
+	dbInstance.Limit(count).Offset(offset).Where("name LIKE ?", "%"+name+"%").Find(&shows)
 
 	var total int64
-	dbInstance.Table("show").Where("deleted_at IS NULL").Count(&total)
+	dbInstance.Table("show").Where("name LIKE ?", "%"+name+"%").Where("deleted_at IS NULL").Count(&total)
 	showDTOs := make([]types.ShowDTO, len(shows))
 	for i := 0; i < len(shows); i++ {
 		showDTOs[i].Show = shows[i]

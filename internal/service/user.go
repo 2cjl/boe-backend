@@ -70,13 +70,15 @@ func GetUserById(id string) orm.User {
 func GetUsers(c *gin.Context) {
 	var offset, _ = strconv.Atoi(c.Query("offset"))
 	var count, _ = strconv.Atoi(c.Query("count"))
+	var name = c.Query("name")
+
 	var users []orm.User
 
 	var dbInstance = db.GetInstance()
-	dbInstance.Limit(count).Offset(offset).Preload("Organization").Find(&users)
+	dbInstance.Limit(count).Offset(offset).Preload("Organization").Where("username LIKE ?", "%"+name+"%").Find(&users)
 
 	var total int64
-	dbInstance.Model(&orm.User{}).Where("deleted_at IS NULL").Count(&total)
+	dbInstance.Model(&orm.User{}).Where("username LIKE ?", "%"+name+"%").Where("deleted_at IS NULL").Count(&total)
 
 	c.JSON(200, gin.H{
 		"code":    200,
