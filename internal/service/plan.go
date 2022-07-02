@@ -95,9 +95,12 @@ type planDTO struct {
 func GetPlanList(c *gin.Context) {
 	var offset, _ = strconv.Atoi(c.Query("offset"))
 	var count, _ = strconv.Atoi(c.Query("count"))
+	var name = c.Query("name")
+	var state = c.Query("state")
+
 	var dbInstance = db.GetInstance()
 	var plans []orm.Plan
-	dbInstance.Limit(count).Offset(offset).Find(&plans)
+	dbInstance.Limit(count).Offset(offset).Where("name LIKE ?", "%"+name+"%").Where("state LIKE ?", "%"+state+"%").Preload("Author").Find(&plans)
 
 	dtos := make([]planDTO, len(plans))
 	for i := 0; i < len(plans); i++ {
@@ -168,6 +171,35 @@ func DeletePlan(c *gin.Context) {
 	var dbInstance = db.GetInstance()
 	var plan orm.Plan
 	dbInstance.Where("id = ?", planId).Find(&plan).Delete(&plan)
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "success",
+	})
+}
+
+// CopyPlan 复制一个计划
+func CopyPlan(c *gin.Context) {
+	t, _ := c.Get(jwtx.IdentityKey)
+	var user = t.(*jwtx.TokenUserInfo)
+
+	var planId = c.Query("planId")
+	var dbInstance = db.GetInstance()
+	var plan orm.Plan
+	// 首先获取原计划
+	dbInstance.Where("id = ?", planId).Find(&plan)
+	if plan.ID == 0 {
+		c.JSON(400, gin.H{
+			"error": "plan not exist!",
+		})
+		return
+	}
+	var newPlan orm.Plan
+	newPlan.UserID, _ = strconv.Atoi(user.ID)
+	newPlan.Name = plan.Name
+	newPlan.Mode = plan.Mode
+	newPlan.State = "未发布"
+
+	dbInstance.Create(&newPlan)
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
