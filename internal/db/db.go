@@ -2,6 +2,7 @@ package db
 
 import (
 	"boe-backend/internal/orm"
+	"boe-backend/internal/types"
 	"boe-backend/internal/util/config"
 	"fmt"
 	"gorm.io/driver/mysql"
@@ -158,6 +159,25 @@ func GetDevicesByGroupDevice(groupDevices []orm.GroupDevice) []orm.Device {
 	}
 	db.Find(&devices, ids)
 	return devices
+}
+
+func GetDevicesByPlanId(planID int) (res []types.DeviceDTO) {
+	getInstance()
+	rows, err := db.Raw("SELECT d.id, d.`name`, d.mac, info.resolution, plan.`name` pname, d.state FROM devices d LEFT JOIN device_info info ON d.id = info.id, plan_device pd, plan WHERE d.id = pd.device_id AND pd.plan_id = ? AND plan.id = d.plan_id", planID).Rows()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	for rows.Next() {
+		var d types.DeviceDTO
+		err := rows.Scan(&d.ID, &d.Name, &d.Mac, &d.Resolution, &d.PlanName, &d.State)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		res = append(res, d)
+	}
+	return
 }
 
 func GetAllDevice(organizationId string) []orm.Device {

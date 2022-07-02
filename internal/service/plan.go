@@ -86,11 +86,6 @@ func GetPlan(c *gin.Context) {
 	})
 }
 
-type planDTO struct {
-	orm.Plan
-	Preview string
-}
-
 // GetPlanList 获取计划列表
 func GetPlanList(c *gin.Context) {
 	var offset, _ = strconv.Atoi(c.Query("offset"))
@@ -102,7 +97,7 @@ func GetPlanList(c *gin.Context) {
 	var plans []orm.Plan
 	dbInstance.Limit(count).Offset(offset).Where("name LIKE ?", "%"+name+"%").Where("state LIKE ?", "%"+state+"%").Preload("Author").Find(&plans)
 
-	dtos := make([]planDTO, len(plans))
+	dtos := make([]types.PlanDTO, len(plans))
 	for i := 0; i < len(plans); i++ {
 		dtos[i].Plan = plans[i]
 	}
@@ -155,12 +150,13 @@ func GetPlanDetail(c *gin.Context) {
 	// 连结用户信息
 	dbInstance.Model(&plan).Association("Author").Find(&plan.Author)
 	dbInstance.Model(&plan).Preload("Shows").Association("PlayPeriods").Find(&plan.PlayPeriods)
-
+	devices := db.GetDevicesByPlanId(plan.ID)
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
 		"data": gin.H{
-			"plan": plan,
+			"plan":    plan,
+			"devices": devices,
 		},
 	})
 }
