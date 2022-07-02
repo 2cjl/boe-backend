@@ -63,20 +63,27 @@ func GetGroupListHandler(c *gin.Context) {
 	db.GetInstance().Limit(count).Offset(offset).Find(&groups, "organization_id = ?", info.OrganizationID)
 	gc := db.GetGroupDeviceCntByGroup(groups)
 
-	var total int64
-	db.GetInstance().Table("groups").Where("deleted_at IS NULL").Count(&total)
-
 	m := make(map[int]int)
 	for _, v := range gc {
 		m[v.ID] = v.Cnt
 	}
+
+	groupDTOs := make([]types.GroupDTO, len(groups))
+
+	for i := 0; i < len(groups); i++ {
+		groupDTOs[i].Group = groups[i]
+		groupDTOs[i].DeviceCnt = m[groups[i].ID]
+	}
+
+	var total int64
+	db.GetInstance().Table("groups").Where("deleted_at IS NULL AND organization_id = ?", info.OrganizationID).Count(&total)
+
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",
 		"data": gin.H{
-			"groups":    groups,
-			"deviceCnt": m,
-			"total":     total,
+			"groups": groupDTOs,
+			"total":  total,
 		},
 	})
 }

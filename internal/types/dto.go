@@ -20,3 +20,8 @@ type ShowDTO struct {
 	orm.Show
 	Preview string
 }
+
+type GroupDTO struct {
+	orm.Group
+	DeviceCnt int
+}

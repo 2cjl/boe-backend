@@ -21,7 +21,6 @@ const (
 	// device->backend
 	typePing       = "ping"
 	typeDeviceInfo = "deviceInfo"
-	typeSyncPlan   = "syncPlan"
 	typeHello      = "hello"
 
 	// backend->device
@@ -92,7 +91,12 @@ func (d *Device) InitInfo() {
 		log.Println(err)
 		return
 	}
-	err = d.SyncPlan()
+
+	var plans []*orm.Plan
+	ins := db.GetInstance()
+	ins.Where("id in (?)", ins.Table("plan_device").Select("plan_id").Where("device_id = ?", d.ID)).Where("state = 未发布").Find(&plans)
+	log.Println(plans)
+	err = d.SyncPlan(plans)
 	if err != nil {
 		log.Println(err)
 	}
@@ -213,20 +217,19 @@ func (d *Device) CtlScreenshot() error {
 	return d.writeMsg(m)
 }
 
-func (d *Device) SyncPlan() error {
-	var plans []*orm.Plan
+func (d *Device) SyncPlan(plans []*orm.Plan) error {
+	if d.ID == 0 {
+		log.Printf("device(%s)id is 0!!!\n", d.Mac)
+		return errors.New(fmt.Sprintf("device(%s)id is 0!!!\n", d.Mac))
+	}
+
 	var planMsgList []*types.PlanMsg
 	result := map[string]interface{}{
 		"type": typePlanList,
 	}
 
 	ins := db.GetInstance()
-	// 获取plan
-	if d.ID == 0 {
-		log.Printf("device(%s)id is 0!!!\n", d.Mac)
-		return errors.New(fmt.Sprintf("device(%s)id is 0!!!\n", d.Mac))
-	}
-	ins.Where("id in (?)", ins.Table("plan_device").Select("plan_id").Where("device_id = ?", d.ID)).Find(&plans)
+
 	// 对于每个plan获取PlayPeriods,并构造返回值
 	for _, plan := range plans {
 		err := ins.Model(&plan).Preload("Shows").Association("PlayPeriods").Find(&plan.PlayPeriods)
