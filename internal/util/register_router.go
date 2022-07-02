@@ -61,7 +61,7 @@ func RegisterRouter(r *gin.Engine) {
 	groupRoute := r.Group("/group")
 	groupRoute.Use(authMiddleware.MiddlewareFunc())
 	groupRoute.GET("/all", service.GetGroupListHandler)
-	groupRoute.GET("/devices/:id", service.GetGroupDevicesHandler)
+	groupRoute.GET("/:id/devices", service.GetGroupDevicesHandler)
 	groupRoute.POST("", service.AddGroupHandler)
 	groupRoute.DELETE("/:id", service.DeleteGroup)
 
