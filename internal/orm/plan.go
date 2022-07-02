@@ -18,6 +18,7 @@ type Plan struct {
 	UpdatedAt   time.Time      `gorm:"column:updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at"`
 	PlayPeriods []PlayPeriod
+	Devices     []Device `gorm:"many2many:plan_device;"`
 }
 
 func (t *Plan) TableName() string {
