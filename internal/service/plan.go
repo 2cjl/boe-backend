@@ -91,7 +91,7 @@ func GetPlanList(c *gin.Context) {
 	var count, _ = strconv.Atoi(c.Query("count"))
 	var dbInstance = db.GetInstance()
 	var plans []orm.Plan
-	dbInstance.Limit(count).Offset(offset).Find(&plans)
+	dbInstance.Limit(count).Offset(offset).Preload("Author").Find(&plans)
 
 	var total int64
 	dbInstance.Model(&orm.Plan{}).Count(&total)
