@@ -195,11 +195,10 @@ func CopyPlan(c *gin.Context) {
 	}
 	var newPlan orm.Plan
 	newPlan.UserID, _ = strconv.Atoi(user.ID)
-	newPlan.ID = plan.ID
 	newPlan.Name = plan.Name
 	newPlan.Mode = plan.Mode
 	newPlan.State = "未发布"
-	newPlan.PlayPeriods = plan.PlayPeriods
+
 	dbInstance.Create(&newPlan)
 	c.JSON(200, gin.H{
 		"code":    200,
