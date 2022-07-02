@@ -61,7 +61,7 @@ type Device struct {
 	Mac            string
 
 	LastHeartbeat time.Time
-	RunningTime   int
+	RunningTime   uint64
 	PlanID        int
 
 	Conn *websocket.Conn
@@ -181,7 +181,7 @@ func (d *Device) Receive() {
 				"type": typePong,
 			}
 			d.LastHeartbeat = time.Now()
-			d.RunningTime = int(m["runningTime"].(float64))
+			d.RunningTime = uint64(m["runningTime"].(float64))
 			d.PlanID = int(m["planId"].(float64))
 		case typeDeviceInfo:
 			var info orm.DeviceInfo

@@ -10,7 +10,7 @@ import (
 )
 
 type reqBrightness struct {
-	data float64
+	Data float64
 }
 
 func CtlScreenshotHandler(c *gin.Context) {
@@ -74,13 +74,11 @@ func ChangeBrightnessHandler(c *gin.Context) {
 		return
 	}
 
-	log.Println(req.data)
-
 	var device orm.Device
 	device.ID = id
 	db.GetInstance().Find(&device)
 	if d := devicemanager.GetDeviceByMac(device.Mac); d != nil {
-		err := d.ChangeBrightness(req.data)
+		err := d.ChangeBrightness(req.Data)
 		if err != nil {
 			log.Println(err)
 			c.JSON(200, gin.H{
