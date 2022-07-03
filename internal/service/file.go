@@ -71,7 +71,7 @@ func GetFilelist(c *gin.Context) {
 	}
 	bucketManager := storage.NewBucketManager(mac, &cfg)
 
-	var files []string
+	var files []storage.ListItem
 	for {
 		entries, _, nextMarker, hasNext, err := bucketManager.ListFiles(bucket, prefix, delimiter, marker, limit)
 		if err != nil {
@@ -80,7 +80,8 @@ func GetFilelist(c *gin.Context) {
 		}
 		//print entries
 		for _, entry := range entries {
-			files = append(files, entry.Key)
+			log.Print(entry)
+			files = append(files, entry)
 			//fmt.Println(entry.Key)
 		}
 		if hasNext {
