@@ -10,6 +10,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.29
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/qiniu/go-sdk/v7 v7.13.0
 	github.com/spf13/viper v1.12.0
 	github.com/tidwall/gjson v1.12.1
 	gorm.io/driver/mysql v1.3.4
@@ -55,6 +56,7 @@ require (
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
+	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a // indirect
 	golang.org/x/sys v0.0.0-20220622161953-175b2fd9d664 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
