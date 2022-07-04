@@ -8,6 +8,7 @@ import (
 	jwtx "boe-backend/internal/util/jwt"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"log"
 	"strconv"
 )
 
@@ -225,6 +226,7 @@ func PublishPlan(c *gin.Context) {
 				"code":    400,
 				"message": "device is offline",
 			})
+			db.GetInstance().Model(&plan).Update("state", devicemanager.PublishFail)
 			return
 		}
 		err := onlineDevice.SyncPlan([]*orm.Plan{&plan})
@@ -233,12 +235,13 @@ func PublishPlan(c *gin.Context) {
 				"code":    500,
 				"message": "failed to publish",
 			})
-			db.GetInstance().Table("plan").Where("id = ", plan.ID).Updates(map[string]interface{}{"state": devicemanager.PublishFail})
+			log.Println(err)
+			db.GetInstance().Model(&plan).Update("state", devicemanager.PublishFail)
 			return
 		}
 	}
 
-	db.GetInstance().Table("plan").Where("id = ", plan.ID).Updates(map[string]interface{}{"state": devicemanager.PublishSuccess})
+	db.GetInstance().Model(&plan).Update("state", devicemanager.PublishSuccess)
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "success",

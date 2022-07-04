@@ -230,7 +230,6 @@ func (d *Device) CtlScreenshot() error {
 
 func (d *Device) SyncPlan(plans []*orm.Plan) error {
 	if d.ID == 0 {
-		log.Printf("device(%s)id is 0!!!\n", d.Mac)
 		return errors.New(fmt.Sprintf("device(%s)id is 0!!!\n", d.Mac))
 	}
 

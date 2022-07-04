@@ -4,6 +4,7 @@ import (
 	"boe-backend/internal/db"
 	"boe-backend/internal/orm"
 	"boe-backend/internal/types"
+	jwtx "boe-backend/internal/util/jwt"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"strconv"
@@ -45,6 +46,9 @@ func GetShowListHandler(c *gin.Context) {
 }
 
 func AddShowHandler(c *gin.Context) {
+	t, _ := c.Get(jwtx.IdentityKey)
+	info := t.(*jwtx.TokenUserInfo)
+
 	var show orm.Show
 	err := c.ShouldBindJSON(&show)
 	if err != nil {
@@ -54,7 +58,11 @@ func AddShowHandler(c *gin.Context) {
 		})
 		return
 	}
-	show.ID = 0
+
+	var user orm.User
+	db.GetInstance().First(&user, info.ID)
+	show.Author = user.Username
+
 	db.GetInstance().Create(&show)
 	c.JSON(200, gin.H{
 		"code":    200,
