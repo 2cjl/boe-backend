@@ -56,8 +56,9 @@ func CreatePlan(c *gin.Context) {
 	}
 
 	plan.PlayPeriods = playPeriods
-	ins.Find(&plan.Devices, req.DeviceIds)
-
+	if req.DeviceIds != nil {
+		ins.Find(&plan.Devices, req.DeviceIds)
+	}
 	var dbInstance = db.GetInstance()
 	// 保存计划实体
 	dbInstance.Create(&plan)

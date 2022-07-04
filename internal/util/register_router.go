@@ -81,6 +81,8 @@ func RegisterRouter(r *gin.Engine) {
 	fileRoute := r.Group("file")
 	fileRoute.Use(authMiddleware.MiddlewareFunc())
 	fileRoute.POST("/presign", service.PreSignHandler)
+	fileRoute.GET("/get_upload_token", service.GetUploadToken)
+	fileRoute.GET("/get_filelist", service.GetFilelist)
 
 	// === 节目相关路由 ===
 	showRoute := r.Group("/show")
