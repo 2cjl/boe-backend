@@ -97,4 +97,10 @@ func RegisterRouter(r *gin.Engine) {
 	orgRoute.Use(authMiddleware.MiddlewareFunc())
 	orgRoute.GET("", service.GetSelfOrgHandler)
 
+	// === 公告相关路由 ===
+	noticeRoute := r.Group("/notice")
+	noticeRoute.Use(authMiddleware.MiddlewareFunc())
+	noticeRoute.GET("/get_notice", service.GetNotice)
+	noticeRoute.PUT("/update_notice", service.UpdateNotice)
+
 }

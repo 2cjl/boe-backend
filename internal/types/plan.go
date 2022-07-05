@@ -22,3 +22,8 @@ type CreatePlanRequest struct {
 	// 设备 ID 列表
 	DeviceIds []int
 }
+
+type UpdateNoticeRequest struct {
+	Name    string
+	Content string
+}
